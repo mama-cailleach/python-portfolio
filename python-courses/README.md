@@ -6,7 +6,6 @@ This section contains projects, exercises, and code samples from various Python 
 
 - **cisco-python-essentials-1/**  
   Projects and exercises from Cisco Python Essentials 1.
-- *(Add other courses as you complete them!)*
 
 Each folder contains:
 - A `README.md` describing the course and listing its projects.
