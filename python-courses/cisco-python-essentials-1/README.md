@@ -1,6 +1,6 @@
 # Cisco Python Essentials 1 – Project Portfolio
 
-This folder contains a collection of beginner Python projects created after completing the [Cisco Python Essentials 1 course](https://www.netacad.com/courses/python-essentials-1). These projects were developed to reinforce key programming concepts, enhance problem-solving skills, and apply best practices in a hands-on manner.
+This folder contains a collection of beginner Python projects created after completing the Cisco Python Essentials 1 course. These projects were developed to reinforce key programming concepts, enhance problem-solving skills, and apply best practices in a hands-on manner.
 
 ---
 
@@ -54,6 +54,11 @@ python contact_book.py
 ```
 Or open and run in [GitHub Codespaces](https://github.com/features/codespaces) for a cloud-based Python environment.
 
+Each project folder contains its own `README.md` with more details and extension ideas.
+
 ---
 
-Each project folder contains its own `README.md` with more details and extension ideas.
+## Certification
+
+I have completed the Cisco Python Essentials 1 course and earned the official digital badge on May 09, 2025.  
+You can verify my achievement on [Credly](https://www.credly.com/badges/88d64fc6-194a-4f35-a4cb-159d07f07a52).
