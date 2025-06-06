@@ -5,16 +5,16 @@ See each folder for a README and more details!
 
 ## Contents
 
-- **[lua-scripts](lua-scripts/)**  
+- **lua-scripts/**  
   Helper scripts for converting text/Excel data into Lua tables—great for automating data integration into game projects.
 
-- **[krita-scripts](krita-scripts/)**  
+- **krita-scripts/**  
   Python plugins and helpers for automating tasks and effects in Krita, especially for card art and batch image editing.
 
-- **[early-silly-sims](early-silly-sims/)**  
+- **early-silly-sims/**  
   My earliest Python mini-projects and random simulators. Beginner-friendly, often based on YouTube tutorials. Expect randomness and fun!
 
-- **[critical-hiss](critical-hiss/)**  
+- **critical-hiss/**  
   D&D-themed Python experiments. At the moment: a simple random character generator.
 
 ## General Notes
