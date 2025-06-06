@@ -24,4 +24,4 @@ This repository is open-sourced under the MIT License. See [LICENSE](LICENSE) fo
 
 ---
 
-Happy coding!
+x
