@@ -7,9 +7,20 @@ This folder contains some of my very first Python scripts—small, playful simul
 - **Beginner-friendly code:**  
   Simple, clear scripts that are easy to follow and modify if you're also learning.
 - **Random-based simulations:**  
-  Most scripts are mini-games or little experiments that use randomness for results (e.g., dice rolls, sports simulations, chance games).
+  Most scripts are mini-games or little experiments that use randomness for results.
 - **Experimentation:**  
   This folder is a sandbox for learning, trying out new ideas, and having fun with code.
+
+## Scripts in this folder
+
+- **98Final.py**  
+  A bilingual (English/Portuguese) interactive simulation of the 1998 World Cup Final between Brazil and France. The user picks a team and the match is simulated with random scores for each half.
+
+- **kohli_vs_cummings.py**  
+  A one-over cricket simulation featuring Virat Kohli (batsman) vs Pat Cummings (bowler). Each ball's outcome is randomized; the script tracks runs and wickets for a short, fun cricket over.
+
+- **poke-cricket.py**  
+  A playful "Pokémon Cricket" game where two teams of Pokémon (“Poke Friends” vs “Poke Evolutions”) play a limited-overs cricket match. Includes random scoring, wickets, and basic scorecards for teams and players.
 
 ## Purpose
 
