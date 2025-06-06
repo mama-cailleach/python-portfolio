@@ -1,0 +1,23 @@
+Team: New Zealand Women
+Suzie Bates,32,Nonkululeko Mlaba
+Georgia Plimmer,9,Ayabonga Khaka
+Amelia Kerr,43,Nonkululeko Mlaba
+Sophie Devine,6,Nadine de Klerk
+Brooke Halliday,38,Chloe Tryon
+Maddy Green,12,
+Isabella Gaze,3,
+Extras,15,
+
+Team: South Africa Women
+Laura Wolvaardt,33,Amelia Kerr
+Tazmin Brits,17,Fran Jonas
+Anneke Bosch,9,Amelia Kerr
+Marizanne Kapp,8,Eden Carson
+Nadine de Klerk,6,Rosemary Mair
+Chloe Tryon,14,Rosemary Mair
+Sune Luus,8,Brooke Halliday
+Annerie Dercksen,10,Amelia Kerr
+Sinalo Jafta,6,Rosemary Mair
+Nonkululeko Mlaba,4,
+Ayabonga Khaka,4,
+Extras,7
