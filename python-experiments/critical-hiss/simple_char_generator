@@ -1,0 +1,28 @@
+import random
+
+# Define lists for races, classes, and backgrounds
+races = ["Human", "Elf", "Dwarf", "Half-Orc", "Tiefling", "Halfling", "Dragonborn", "Half-Elf", "Gnome"]
+classes = ["Fighter", "Wizard", "Rogue", "Cleric", "Barbarian", "Ranger", "Paladin", "Bard", "Monk", "Sorcerer", "Warlock", "Druid"]
+backgrounds = ["Soldier", "Noble", "Criminal", "Acolyte", "Hermit", "Entertainer", "Guild Artisan", "Sailor", "Urchin", "Outlander"]
+
+# Random selection for race, class, and background
+selected_race = random.choice(races)
+selected_class = random.choice(classes)
+selected_background = random.choice(backgrounds)
+
+# Function to roll 4d6 and drop the lowest die
+def roll_ability_score():
+    rolls = [random.randint(1, 6) for _ in range(4)]
+    return sum(sorted(rolls)[1:])  # drop the lowest roll
+
+# Roll ability scores for Strength, Dexterity, Constitution, Intelligence, Wisdom, and Charisma
+ability_scores = {
+    "Strength": roll_ability_score(),
+    "Dexterity": roll_ability_score(),
+    "Constitution": roll_ability_score(),
+    "Intelligence": roll_ability_score(),
+    "Wisdom": roll_ability_score(),
+    "Charisma": roll_ability_score(),
+}
+
+print(selected_race, selected_class, selected_background, ability_scores)
