@@ -5,8 +5,8 @@ This section contains projects, exercises, and code samples from various Python 
 ## Contents
 
 - **cisco-python-essentials-1/**  
-  Projects and exercises from Cisco Python Essentials 1 (beginner).  
-  Includes: Contact Book, Todo List App, Text Analyzer, Quiz App, Bank Simulator, Unit Converter, and more.
+  Projects from Cisco Python Essentials 1 (beginner).  
+  Includes: Contact Book, Todo List App, Text Analyzer, Quiz App, Bank Simulator, Unit Converter.
 
 - **cisco-python-essentials-2/**  
   Projects and applications from Cisco Python Essentials 2 (intermediate).  
