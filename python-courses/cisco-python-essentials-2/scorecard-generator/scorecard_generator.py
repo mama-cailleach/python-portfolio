@@ -1,10 +1,49 @@
 import sys
 from collections import defaultdict
 import os
+import csv
 
 BALLS_PER_OVER = 6
 MAX_OVERS = 2
-MAX_BOWLER_OVERS = 4
+MAX_BOWLER_OVERS = 1
+
+def list_xi_files():
+    teams_dir = os.path.join(os.path.dirname(__file__), "./teams")
+    if not os.path.isdir(teams_dir):
+        return []
+    return [f for f in os.listdir(teams_dir) if f.endswith("_XI.csv")]
+
+def load_xi(filepath):
+    players = []
+    with open(filepath, newline="", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            players.append({'number': int(row['number']), 'name': row['name']})
+    return players
+
+def choose_team_xi(label):
+    xi_files = list_xi_files()
+    if not xi_files:
+        print("No starting XI files found. Please use the team manager to create/select your teams.")
+        sys.exit(1)
+    print(f"\nAvailable starting XIs for {label} team:")
+    for idx, fname in enumerate(xi_files, 1):
+        print(f"{idx}. {fname}")
+    while True:
+        sel = input(f"Select {label} team by number: ").strip()
+        if sel.isdigit() and 1 <= int(sel) <= len(xi_files):
+            xi_file = xi_files[int(sel)-1]
+            break
+        print("Invalid selection.")
+    team_name = xi_file[:-7]  # Remove _XI.csv
+    xi_path = os.path.join(os.path.dirname(__file__), "./teams", xi_file)
+    players = load_xi(xi_path)
+    team = Team(team_name)
+    for p in players:
+        team.add_player(Player(p['number'], p['name']))
+    # Set batting order to XI order
+    team.order = [p['number'] for p in players]
+    return team
 
 def safe_int(prompt, valid=None):
     while True:
@@ -108,8 +147,8 @@ class Innings:
             bat = p.batting
             balls = bat['balls']
             sr = (bat['runs']*100/balls if balls else 0)
-            # Format dismissal to only show surnames for bowler/fielder
             dismissal = bat['dismissal']
+            # Format dismissal to only show surnames for bowler/fielder, and always include bowler for c/lbw
             if dismissal.startswith("c "):
                 # c Fielder b Bowler
                 parts = dismissal.split()
@@ -124,7 +163,6 @@ class Innings:
                 bowler_surname = dismissal.split()[-1]
                 dismissal = f"lbw b {bowler_surname}"
             elif dismissal.startswith("run out("):
-                # run out(Fielder)
                 inside = dismissal[8:-1]
                 fielder_surname = inside.split()[-1]
                 dismissal = f"run out({fielder_surname})"
@@ -249,7 +287,7 @@ def input_team(team_label):
     return team
 
 def select_openers(team):
-    print(f"Select opening batters for {team.name}. Enter shirt numbers separated by space: ")
+    print(f"Select opening batters. Enter shirt numbers separated by space: ")
     while True:
         try:
             openers = list(map(int, input().split()))
@@ -285,7 +323,10 @@ def select_bowler(bowling_team, over, prev_bowler, bowler_overs):
             print("you can't do that try again.")
 
 def input_ball(batters, bowler, over_num=None, ball_num=None, team=None):
-    # Show ball/over number and explanation
+    # Defensive: handle if a batter is None (all out)
+    if batters[0] is None or batters[1] is None:
+        print("No more batters available.")
+        return 0, "end", [], False
     if over_num is not None and ball_num is not None:
         prompt_prefix = f"{over_num}.{ball_num} ov (0-6=runs scored, w=wicket, wd=wide, nb=no ball, b=bye, lb=leg bye): "
     else:
@@ -360,23 +401,67 @@ def input_ball(batters, bowler, over_num=None, ball_num=None, team=None):
 
 def main():
     print("Cricket T20 Scorecard Creator/Analyzer\n")
-    team1 = input_team("first")
-    team2 = input_team("second")
-    print("\nFirst Innings: " + team1.name + " Batting")
-    innings1 = Innings(team1, team2)
+    ready = input("Do you have your starting XIs ready? (y/n): ").strip().lower()
+    if ready != "y":
+        print("Please use the team manager (team_utils.py) to create/select your teams and starting XIs before running the scorecard generator.")
+        sys.exit(0)
+    print("\nChoose teams for the match:")
+    team1 = choose_team_xi("first")
+    team2 = choose_team_xi("second")
+
+    # Toss logic
+    print("\nWho won the toss?")
+    print(f"1. {team1.name}")
+    print(f"2. {team2.name}")
+    while True:
+        toss_winner = input("Enter number: ").strip()
+        if toss_winner == "1":
+            toss_team = team1
+            toss_loser = team2
+            break
+        elif toss_winner == "2":
+            toss_team = team2
+            toss_loser = team1
+            break
+        else:
+            print("Invalid selection.")
+    print(f"\nWhat does {toss_team.name} choose?")
+    print("1. Bat first")
+    print("2. Bowl first")
+    while True:
+        toss_choice = input("Enter number: ").strip()
+        if toss_choice == "1":
+            batting_first = toss_team
+            bowling_first = toss_loser
+            break
+        elif toss_choice == "2":
+            batting_first = toss_loser
+            bowling_first = toss_team
+            break
+        else:
+            print("Invalid selection.")
+
+    # Show available players for opening selection
+    print(f"\nFirst Innings: {batting_first.name} Batting")
+    print("Players available to open the batting:")
+    for num, p in sorted(batting_first.players.items()):
+        print(f"{num}: {p.name}")
+
+    innings1 = Innings(batting_first, bowling_first)
 
     # Batting order
-    openers = select_openers(team1)
-    striker, non_striker = team1.players[openers[0]], team1.players[openers[1]]
+    openers = select_openers(batting_first)
+    striker, non_striker = batting_first.players[openers[0]], batting_first.players[openers[1]]
     current_batters = [striker, non_striker]
-    batters_yet = [num for num in team1.players if num not in team1.order]
+    batters_yet = [num for num in batting_first.players if num not in batting_first.order]
     bowler_overs = defaultdict(list)
     wickets = 0
     over = 0
     prev_bowler = None
     while over < MAX_OVERS and wickets < 10:
-        bowler_num = select_bowler(team2, over, prev_bowler, bowler_overs)
-        bowler = team2.players[bowler_num]
+        # Use bowling_first for bowler selection
+        bowler_num = select_bowler(bowling_first, over, prev_bowler, bowler_overs)
+        bowler = bowling_first.players[bowler_num]
         balls_this_over = 0
         over_runs = 0
         over_dots = 0
@@ -384,15 +469,17 @@ def main():
         legal_balls = 0
         ball = 1
         while legal_balls < 6:
-            if wickets == 10:
+            # Only break if 10 wickets have fallen or both batters are None
+            if wickets == 10 or current_batters[0] is None or current_batters[1] is None:
                 break
-            # Pass team2 for fielders (bowling team)
-            result = input_ball(current_batters, bowler, over, ball, team2)
+            result = input_ball(current_batters, bowler, over, ball, bowling_first)
             if len(result) == 4:
                 runs, event_type, fielders, swapped = result
             else:
                 runs, event_type, fielders = result
                 swapped = False
+            if event_type == "end":
+                break
             batter = current_batters[0]
             event = BallEvent(over, ball, bowler, batter, runs, event_type, fielders)
             innings1.add_ball(event)
@@ -403,8 +490,8 @@ def main():
             if event_type == "normal":
                 batter.batting['runs'] += runs
                 batter.batting['balls'] += 1
-                if runs == 4: batter.batting['4s'] += 1
-                if runs == 6: batter.batting['6s'] += 1
+                if runs == 4: bowler.bowling['4s'] += 1
+                if runs == 6: bowler.bowling['6s'] += 1
                 if runs == 0: 
                     bowler.bowling['dots'] += 1
                     over_dots += 1
@@ -413,7 +500,6 @@ def main():
                 if runs == 4: bowler.bowling['4s'] += 1
                 if runs == 6: bowler.bowling['6s'] += 1
                 over_runs += runs
-                # Swap on odd runs
                 if runs % 2 == 1:
                     current_batters.reverse()
                 legal_balls += 1
@@ -422,14 +508,12 @@ def main():
                 innings1.extras['wides'] += runs
                 bowler.bowling['wides'] += runs
                 bowler.bowling['runs'] += runs
-                balls_this_over -= 1  # Does not count as legal ball
-                # Do not increment legal_balls or ball
+                balls_this_over -= 1
             elif event_type == "no ball":
                 innings1.extras['no balls'] += runs
                 bowler.bowling['noballs'] += runs
                 bowler.bowling['runs'] += runs
                 balls_this_over -= 1
-                # Do not increment legal_balls or ball
             elif event_type == "bye":
                 innings1.extras['byes'] += runs
                 batter.batting['balls'] += 1
@@ -451,7 +535,6 @@ def main():
             elif event_type == "wicket":
                 batter.batting['balls'] += 1
                 bowler.bowling['balls'] += 1
-                # Dismissal string
                 if len(fielders) == 2:
                     batter.batting['dismissal'] = f"c {fielders[0]} b {fielders[1]}"
                 elif fielders and "lbw" in fielders[0].lower():
@@ -463,16 +546,21 @@ def main():
                 else:
                     batter.batting['dismissal'] = "unknown"
                 bowler.bowling['wickets'] += 1
-                # Show live wicket info with updated wickets
                 runs_total, _, _, _ = innings1.get_score()
                 curr_wickets = wickets + 1
                 print(f"\nWICKET! Score: {runs_total}-{curr_wickets} | {batter.name} {batter.batting['runs']}({batter.batting['balls']})")
                 wickets += 1
-                # Choose next batter
+                innings1.fall_of_wickets.append((runs_total, batter.name, bowler.name, over + ball / 10))
+                legal_balls += 1
+                ball += 1
+                if wickets == 10:
+                    # All out, stop the over
+                    current_batters[0] = None
+                    break
                 if batters_yet:
                     print("Choose next batter in from:")
                     for n in batters_yet:
-                        print(f"{n}: {team1.players[n].name}")
+                        print(f"{n}: {batting_first.players[n].name}")
                     while True:
                         try:
                             next_batter_num = int(input("Enter shirt number of next batter: "))
@@ -482,14 +570,11 @@ def main():
                             break
                         except:
                             print("you can't do that try again.")
-                    team1.order.append(next_batter_num)
-                    current_batters[0] = team1.players[next_batter_num]
+                    batting_first.order.append(next_batter_num)
+                    current_batters[0] = batting_first.players[next_batter_num]
                     batters_yet.remove(next_batter_num)
                 else:
                     current_batters[0] = None
-                innings1.fall_of_wickets.append((runs_total, batter.name, bowler.name, over + ball / 10))
-                legal_balls += 1
-                ball += 1
             if wickets == 10:
                 break
         print("OVER FINISHED.")
