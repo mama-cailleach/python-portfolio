@@ -474,9 +474,6 @@ def main():
     wickets = 0
     over = 0
     prev_bowler = None
-    # Swap striker/non-striker before first over as well
-    if current_batters[0] is not None and current_batters[1] is not None:
-        current_batters.reverse()
     while over < MAX_OVERS and wickets < 10:
         # Use bowling_first for bowler selection
         bowler_num = select_bowler(bowling_first, over, prev_bowler, bowler_overs)
@@ -487,11 +484,8 @@ def main():
         over_start_balls = len(innings1.balls)
         legal_balls = 0
         ball = 1
-        # Always two batters unless all out
-        current_batters = [batting_first.players[n] for n in batting_first.order[-2:]]
-        # Swap striker and non-striker at the start of each over
-        if current_batters[0] is not None and current_batters[1] is not None:
-            current_batters.reverse()
+        # Always two batters unless all out (not needed at the moment)
+        # current_batters = [batting_first.players[n] for n in batting_first.order[-2:]]
         while legal_balls < 6:
             # Only break if 10 wickets have fallen or both batters are None
             if wickets == 10 or current_batters[0] is None or current_batters[1] is None:
@@ -633,7 +627,7 @@ def main():
             bowler.bowling['maidens'] += 1
         prev_bowler = bowler_num
         over += 1
-        if current_batters[0] and current_batters[1]:
+        if over > 0 and current_batters[0] and current_batters[1]:
             current_batters.reverse()  # Swap ends
 
     innings1.print_batting_scorecard()
