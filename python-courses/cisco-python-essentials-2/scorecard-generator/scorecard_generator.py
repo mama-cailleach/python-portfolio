@@ -624,20 +624,14 @@ def main():
                     current_batters[0] = None
                     current_batters[1] = None
                     break
-        # Replace the OUT batter in current_batters with the new batter
-        #current_batters[0] = batting_first.players[next_batter_num]
-    else:
-        # No more available batters, set both to None
-        current_batters[0] = None
-        current_batters[1] = None
-        print("OVER FINISHED.")
-        bowler_overs[bowler_num].append(over)
-        if over_runs == 0:
-            bowler.bowling['maidens'] += 1
+    print("OVER FINISHED.")
+    bowler_overs[bowler_num].append(over)
+    if over_runs == 0:            
+        bowler.bowling['maidens'] += 1
         prev_bowler = bowler_num
-        over += 1
-        if over > 0 and current_batters[0] and current_batters[1]:
-            current_batters.reverse()  # Swap ends    
+    over += 1
+    if over > 0 and current_batters[0] and current_batters[1]:
+        current_batters.reverse()  # Swap ends    
 
     innings1.print_batting_scorecard()
     innings1.print_bowling_scorecard()
