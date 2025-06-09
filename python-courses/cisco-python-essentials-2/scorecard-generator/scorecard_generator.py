@@ -496,11 +496,11 @@ def main():
         over_start_balls = len(innings1.balls)
         legal_balls = 0
         ball = 1
-        # Always two batters unless all out (not needed at the moment)
-        # current_batters = [batting_first.players[n] for n in batting_first.order[-2:]]
+        over_ended_early = False  # PATCH: flag to indicate early over end
         while legal_balls < 6:
             # Only break if 10 wickets have fallen or both batters are None
             if wickets == 10 or current_batters[0] is None or current_batters[1] is None:
+                over_ended_early = True  # PATCH
                 break
             result = input_ball(current_batters, bowler, over, ball, bowling_first)
             if len(result) == 4:
@@ -509,6 +509,7 @@ def main():
                 runs, event_type, fielders = result
                 swapped = False
             if event_type == "end":
+                over_ended_early = True  # PATCH
                 break
             batter = current_batters[0]
             event = BallEvent(over, ball, bowler, batter, runs, event_type, fielders)
@@ -538,12 +539,12 @@ def main():
                 innings1.extras['wides'] += runs
                 bowler.bowling['wides'] += runs
                 bowler.bowling['runs'] += runs
-                balls_this_over -= 1
+                # PATCH: do NOT increment legal_balls for wides
             elif event_type == "no ball":
                 innings1.extras['no balls'] += runs
                 bowler.bowling['noballs'] += runs
                 bowler.bowling['runs'] += runs
-                balls_this_over -= 1
+                # PATCH: do NOT increment legal_balls for no balls
             elif event_type == "bye":
                 innings1.extras['byes'] += runs
                 batter.batting['balls'] += 1
@@ -596,14 +597,17 @@ def main():
                 if wickets == 10:
                     current_batters[0] = None
                     current_batters[1] = None
+                    over_ended_early = True  # PATCH
                     break
 
-                # Prompt for next batter immediately after wicket
+                # After a wicket has fallen, find batters who are neither out nor the non-striker
                 non_striker = current_batters[1]
                 batters_batted = [b.number for b in batting_first.players.values() if b.batting['balls'] > 0 or b.batting['dismissal'] != 'not out']
-                if non_striker is not None and non_striker.number in batters_batted:
-                    batters_batted.remove(non_striker.number)
-                batters_yet = [num for num in batting_first.order if num not in batters_batted]
+                # Correct: Exclude the non-striker from batters_yet, regardless of whether they've faced a ball yet
+                batters_yet = [
+                num for num in batting_first.order
+                if num not in batters_batted and (non_striker is None or num != non_striker.number)
+                ]
                 if batters_yet:
                     print("Choose next batter in from:")
                     for idx, num in enumerate(batters_yet, 1):
@@ -623,15 +627,19 @@ def main():
                 else:
                     current_batters[0] = None
                     current_batters[1] = None
+                    over_ended_early = True  # PATCH
                     break
-    print("OVER FINISHED.")
-    bowler_overs[bowler_num].append(over)
-    if over_runs == 0:            
-        bowler.bowling['maidens'] += 1
+        if over_ended_early:
+            print("OVER ENDED EARLY (all out, no batters, or innings ended).")  # PATCH
+        else:
+            print("OVER FINISHED.")
+        bowler_overs[bowler_num].append(over)
+        if over_runs == 0:
+            bowler.bowling['maidens'] += 1
         prev_bowler = bowler_num
-    over += 1
-    if over > 0 and current_batters[0] and current_batters[1]:
-        current_batters.reverse()  # Swap ends    
+        over += 1
+        if over > 0 and current_batters[0] and current_batters[1]:
+            current_batters.reverse()  # Swap ends    
 
     innings1.print_batting_scorecard()
     innings1.print_bowling_scorecard()
