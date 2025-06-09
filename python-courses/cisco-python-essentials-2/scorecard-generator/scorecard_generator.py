@@ -567,7 +567,6 @@ def main():
                 bowler.bowling['balls'] += 1
                 # Fix dismissal string logic
                 if len(fielders) == 2:
-                    # Caught: fielders[0]=fielder name, fielders[1]=bowler name
                     fielder_surname = fielders[0].split()[-1]
                     bowler_surname = bowler.name.split()[-1]
                     batter.batting['dismissal'] = f"c {fielder_surname} b {bowler_surname}"
@@ -576,20 +575,12 @@ def main():
                     batter.batting['dismissal'] = f"lbw b {bowler.name.split()[-1]}"
                     bowler.bowling['wickets'] += 1
                 elif fielders and "run out" in fielders[0].lower():
-                    # Not used in input_ball, but keep for completeness
                     batter.batting['dismissal'] = f"run out({fielders[0]})"
-                    # Do NOT increment bowler wickets for run out
                 elif len(fielders) == 1:
-                    # Run out or bowled
-                    # If fielders[0] is a player name, treat as run out
-                    # If fielders[0] is bowler name, treat as bowled
                     if " " in fielders[0] and fielders[0] != bowler.name:
-                        # Assume run out
                         fielder_surname = fielders[0].split()[-1]
                         batter.batting['dismissal'] = f"run out({fielder_surname})"
-                        # Do NOT increment bowler wickets for run out
                     else:
-                        # Bowled
                         bowler_surname = fielders[0].split()[-1]
                         batter.batting['dismissal'] = f"b {bowler_surname}"
                         bowler.bowling['wickets'] += 1
@@ -603,13 +594,16 @@ def main():
                 legal_balls += 1
                 ball += 1
                 if wickets == 10:
-                    # All out: set both batters to None to trigger end of over/innings
                     current_batters[0] = None
                     current_batters[1] = None
                     break
-                # Update batters_yet after wicket, not just once at start
-                # Recalculate batters_yet after wicket
-                batters_yet = [num for num in batting_first.order if num not in batting_first.order[:wickets+2]]
+
+                # Prompt for next batter immediately after wicket
+                non_striker = current_batters[1]
+                batters_batted = [b.number for b in batting_first.players.values() if b.batting['balls'] > 0 or b.batting['dismissal'] != 'not out']
+                if non_striker is not None and non_striker.number in batters_batted:
+                    batters_batted.remove(non_striker.number)
+                batters_yet = [num for num in batting_first.order if num not in batters_batted]
                 if batters_yet:
                     print("Choose next batter in from:")
                     for idx, num in enumerate(batters_yet, 1):
@@ -625,16 +619,32 @@ def main():
                             break
                         except:
                             print("you can't do that try again.")
-                    batting_first.order[wickets+2-1] = next_batter_num  # Place next batter in order
                     current_batters[0] = batting_first.players[next_batter_num]
-                    # batters_yet will be recalculated on next wicket
-                    # current_batters[1] stays as non-striker
                 else:
-                    # No more available batters, set both to None
                     current_batters[0] = None
                     current_batters[1] = None
-            if wickets == 10:
-                break
+                    break
+        if batters_yet:
+            print("Choose next batter in from:")
+            for idx, num in enumerate(batters_yet, 1):
+                p = batting_first.players[num]
+                print(f"{idx}: {num} {p.name}")
+            while True:
+                try:
+                    next_batter_idx = int(input("Enter order number of next batter: "))
+                    if not (1 <= next_batter_idx <= len(batters_yet)):
+                        print("you can't do that try again.")
+                        continue
+                    next_batter_num = batters_yet[next_batter_idx-1]
+                    break
+                except:
+                    print("you can't do that try again.")
+        # Replace the OUT batter in current_batters with the new batter
+        current_batters[0] = batting_first.players[next_batter_num]
+    else:
+        # No more available batters, set both to None
+        current_batters[0] = None
+        current_batters[1] = None
         print("OVER FINISHED.")
         bowler_overs[bowler_num].append(over)
         if over_runs == 0:
