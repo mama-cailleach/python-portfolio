@@ -41,8 +41,8 @@ def choose_team_xi(label):
     team = Team(team_name)
     for p in players:
         team.add_player(Player(p['number'], p['name']))
-    # Set batting order to XI order
-    team.order = [p['number'] for p in players]
+    # Do NOT set batting order here; openers will be added later
+        team.order = []
     return team
 
 def safe_int(prompt, valid=None):
@@ -468,6 +468,8 @@ def main():
         over_start_balls = len(innings1.balls)
         legal_balls = 0
         ball = 1
+        # Always two batters unless all out
+        current_batters = [batting_first.players[n] for n in batting_first.order[-2:]]
         while legal_balls < 6:
             # Only break if 10 wickets have fallen or both batters are None
             if wickets == 10 or current_batters[0] is None or current_batters[1] is None:
@@ -554,9 +556,13 @@ def main():
                 legal_balls += 1
                 ball += 1
                 if wickets == 10:
-                    # All out, stop the over
+                    # All out: set both batters to None to trigger end of over/innings
                     current_batters[0] = None
+                    current_batters[1] = None
                     break
+                # Update batters_yet after wicket, not just once at start
+                # Recalculate batters_yet after wicket
+                batters_yet = [num for num in batting_first.players if num not in batting_first.order]
                 if batters_yet:
                     print("Choose next batter in from:")
                     for n in batters_yet:
@@ -572,9 +578,12 @@ def main():
                             print("you can't do that try again.")
                     batting_first.order.append(next_batter_num)
                     current_batters[0] = batting_first.players[next_batter_num]
-                    batters_yet.remove(next_batter_num)
+                    # batters_yet will be recalculated on next wicket
+                    # current_batters[1] stays as non-striker
                 else:
+                    # No more available batters, set both to None
                     current_batters[0] = None
+                    current_batters[1] = None
             if wickets == 10:
                 break
         print("OVER FINISHED.")
@@ -583,13 +592,11 @@ def main():
             bowler.bowling['maidens'] += 1
         prev_bowler = bowler_num
         over += 1
-        current_batters.reverse()  # Swap ends
+        if current_batters[0] and current_batters[1]:
+            current_batters.reverse()  # Swap ends
 
     innings1.print_batting_scorecard()
     innings1.print_bowling_scorecard()
 
 if __name__ == "__main__":
     main()
-
-
-
