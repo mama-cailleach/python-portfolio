@@ -538,7 +538,7 @@ def main():
                 batter.batting['balls'] += 1
                 bowler.bowling['balls'] += 1
                 if len(fielders) == 2:
-                    batter.batting['dismissal'] = f"c {fielders[0]} b {fielders[1]}"
+                    batter.batting['dismissal'] = f"c {fielders[0]} b {bowler.name.split()[-1]}"
                 elif fielders and "lbw" in fielders[0].lower():
                     batter.batting['dismissal'] = f"lbw b {bowler.name.split()[-1]}"
                 elif fielders and "run out" in fielders[0].lower():
