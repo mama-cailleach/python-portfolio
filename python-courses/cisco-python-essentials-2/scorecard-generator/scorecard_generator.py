@@ -39,10 +39,11 @@ def choose_team_xi(label):
     xi_path = os.path.join(os.path.dirname(__file__), "./teams", xi_file)
     players = load_xi(xi_path)
     team = Team(team_name)
+    order = []
     for p in players:
         team.add_player(Player(p['number'], p['name']))
-    # Do NOT set batting order here; openers will be added later
-        team.order = []
+        order.append(p['number'])
+    team.order = order  # Set batting order as per CSV
     return team
 
 def safe_int(prompt, valid=None):
@@ -303,17 +304,23 @@ def input_team(team_label):
     return team
 
 def select_openers(team):
-    print(f"Select opening batters. Enter shirt numbers separated by space: ")
+    print(f"Select opening batters. Enter two numbers separated by space (choose by order number):")
+    # Display players in XI order
+    for idx, num in enumerate(team.order, 1):
+        p = team.players[num]
+        print(f"{idx}: {num} {p.name}")
     while True:
         try:
-            openers = list(map(int, input().split()))
-            if len(openers) != 2 or openers[0] == openers[1]:
+            openers_idx = list(map(int, input().split()))
+            if len(openers_idx) != 2 or openers_idx[0] == openers_idx[1]:
                 print("you can't do that try again.")
                 continue
-            if not all(num in team.players for num in openers):
+            if not all(1 <= idx <= len(team.order) for idx in openers_idx):
                 print("you can't do that try again.")
                 continue
-            team.order.extend(openers)
+            openers = [team.order[idx-1] for idx in openers_idx]
+            # Set openers as first in batting order
+            team.order = openers + [n for n in team.order if n not in openers]
             return openers
         except Exception:
             print("you can't do that try again.")
@@ -321,20 +328,22 @@ def select_openers(team):
 def select_bowler(bowling_team, over, prev_bowler, bowler_overs):
     print(f"\nSelect bowler for over {over+1} from {bowling_team.name}:")
     eligible = []
-    for num, p in bowling_team.players.items():
+    for idx, num in enumerate(bowling_team.order, 1):
+        p = bowling_team.players[num]
         overs_bowled = len(bowler_overs[num])
         last_bowled = bowler_overs[num][-1] if bowler_overs[num] else -2
         can_bowl = overs_bowled < MAX_BOWLER_OVERS and (last_bowled < over-1 or last_bowled == -2)
-        print(f"{num}: {p.name} - {overs_bowled} overs bowled", "(resting)" if not can_bowl else "")
+        print(f"{idx}: {num} {p.name} - {overs_bowled} overs bowled", "(resting)" if not can_bowl else "")
         if can_bowl:
-            eligible.append(num)
+            eligible.append(idx)
     while True:
         try:
-            sel = int(input("Enter shirt number of bowler: "))
+            sel = int(input("Enter order number of bowler: "))
             if sel not in eligible:
                 print("you can't do that try again.")
                 continue
-            return sel
+            bowler_num = bowling_team.order[sel-1]
+            return bowler_num
         except Exception:
             print("you can't do that try again.")
 
@@ -460,8 +469,9 @@ def main():
     # Show available players for opening selection
     print(f"\nFirst Innings: {batting_first.name} Batting")
     print("Players available to open the batting:")
-    for num, p in sorted(batting_first.players.items()):
-        print(f"{num}: {p.name}")
+    for idx, num in enumerate(batting_first.order, 1):
+        p = batting_first.players[num]
+        print(f"{idx}: {num} {p.name}")
 
     innings1 = Innings(batting_first, bowling_first)
 
@@ -469,13 +479,12 @@ def main():
     openers = select_openers(batting_first)
     striker, non_striker = batting_first.players[openers[0]], batting_first.players[openers[1]]
     current_batters = [striker, non_striker]
-    batters_yet = [num for num in batting_first.players if num not in batting_first.order]
+    batters_yet = [num for num in batting_first.order if num not in batting_first.order[:2]]
     bowler_overs = defaultdict(list)
     wickets = 0
     over = 0
     prev_bowler = None
     while over < MAX_OVERS and wickets < 10:
-        # Use bowling_first for bowler selection
         bowler_num = select_bowler(bowling_first, over, prev_bowler, bowler_overs)
         bowler = bowling_first.players[bowler_num]
         balls_this_over = 0
@@ -597,21 +606,23 @@ def main():
                     break
                 # Update batters_yet after wicket, not just once at start
                 # Recalculate batters_yet after wicket
-                batters_yet = [num for num in batting_first.players if num not in batting_first.order]
+                batters_yet = [num for num in batting_first.order if num not in batting_first.order[:wickets+2]]
                 if batters_yet:
                     print("Choose next batter in from:")
-                    for n in batters_yet:
-                        print(f"{n}: {batting_first.players[n].name}")
+                    for idx, num in enumerate(batters_yet, 1):
+                        p = batting_first.players[num]
+                        print(f"{idx}: {num} {p.name}")
                     while True:
                         try:
-                            next_batter_num = int(input("Enter shirt number of next batter: "))
-                            if next_batter_num not in batters_yet:
+                            next_batter_idx = int(input("Enter order number of next batter: "))
+                            if not (1 <= next_batter_idx <= len(batters_yet)):
                                 print("you can't do that try again.")
                                 continue
+                            next_batter_num = batters_yet[next_batter_idx-1]
                             break
                         except:
                             print("you can't do that try again.")
-                    batting_first.order.append(next_batter_num)
+                    batting_first.order[wickets+2-1] = next_batter_num  # Place next batter in order
                     current_batters[0] = batting_first.players[next_batter_num]
                     # batters_yet will be recalculated on next wicket
                     # current_batters[1] stays as non-striker
