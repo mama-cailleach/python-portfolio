@@ -543,11 +543,14 @@ def main():
                     fielder_surname = fielders[0].split()[-1]
                     bowler_surname = bowler.name.split()[-1]
                     batter.batting['dismissal'] = f"c {fielder_surname} b {bowler_surname}"
+                    bowler.bowling['wickets'] += 1
                 elif fielders and "lbw" in fielders[0].lower():
                     batter.batting['dismissal'] = f"lbw b {bowler.name.split()[-1]}"
+                    bowler.bowling['wickets'] += 1
                 elif fielders and "run out" in fielders[0].lower():
                     # Not used in input_ball, but keep for completeness
                     batter.batting['dismissal'] = f"run out({fielders[0]})"
+                    # Do NOT increment bowler wickets for run out
                 elif len(fielders) == 1:
                     # Run out or bowled
                     # If fielders[0] is a player name, treat as run out
@@ -556,13 +559,14 @@ def main():
                         # Assume run out
                         fielder_surname = fielders[0].split()[-1]
                         batter.batting['dismissal'] = f"run out({fielder_surname})"
+                        # Do NOT increment bowler wickets for run out
                     else:
                         # Bowled
                         bowler_surname = fielders[0].split()[-1]
                         batter.batting['dismissal'] = f"b {bowler_surname}"
+                        bowler.bowling['wickets'] += 1
                 else:
                     batter.batting['dismissal'] = "unknown"
-                bowler.bowling['wickets'] += 1
                 runs_total, _, _, _ = innings1.get_score()
                 curr_wickets = wickets + 1
                 print(f"\nWICKET! Score: {runs_total}-{curr_wickets} | {batter.name} {batter.batting['runs']}({batter.batting['balls']})")
