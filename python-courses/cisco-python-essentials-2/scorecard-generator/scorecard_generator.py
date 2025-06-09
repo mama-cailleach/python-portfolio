@@ -166,9 +166,18 @@ class Innings:
                 inside = dismissal[8:-1]
                 fielder_surname = inside.split()[-1]
                 dismissal = f"run out({fielder_surname})"
+            # Count 4s and 6s for this batter
+            fours = 0
+            sixes = 0
+            for be in self.balls:
+                if be.batter == p and be.event == "normal":
+                    if be.runs == 4:
+                        fours += 1
+                    elif be.runs == 6:
+                        sixes += 1
             print("{:<20}{:<25}{:>5}{:>6}{:>4}{:>4}{:>7.2f}".format(
                 p.name, dismissal, bat['runs'], balls,
-                bat['4s'], bat['6s'], sr
+                fours, sixes, sr
             ))
         # Extras
         extras_total = sum(self.extras.values())
@@ -214,12 +223,19 @@ class Innings:
             wkts = p.bowling['wickets']
             econ = (runs / (balls/6)) if balls else 0
             dots = p.bowling['dots']
-            f4s = p.bowling['4s']
-            s6s = p.bowling['6s']
+            # Count 4s and 6s for this bowler
+            fours = 0
+            sixes = 0
+            for be in self.balls:
+                if be.bowler == p and be.event == "normal":
+                    if be.runs == 4:
+                        fours += 1
+                    elif be.runs == 6:
+                        sixes += 1
             wides = p.bowling['wides']
             noballs = p.bowling['noballs']
             print("{:<20}{:>6}{:>8}{:>6}{:>6}{:>7.2f}{:>6}{:>4}{:>4}{:>7}{:>8}".format(
-                p.name, overs, maidens, runs, wkts, econ, dots, f4s, s6s, wides, noballs
+                p.name, overs, maidens, runs, wkts, econ, dots, fours, sixes, wides, noballs
             ))
         print()
 
@@ -458,6 +474,9 @@ def main():
     wickets = 0
     over = 0
     prev_bowler = None
+    # Swap striker/non-striker before first over as well
+    if current_batters[0] is not None and current_batters[1] is not None:
+        current_batters.reverse()
     while over < MAX_OVERS and wickets < 10:
         # Use bowling_first for bowler selection
         bowler_num = select_bowler(bowling_first, over, prev_bowler, bowler_overs)
@@ -470,6 +489,9 @@ def main():
         ball = 1
         # Always two batters unless all out
         current_batters = [batting_first.players[n] for n in batting_first.order[-2:]]
+        # Swap striker and non-striker at the start of each over
+        if current_batters[0] is not None and current_batters[1] is not None:
+            current_batters.reverse()
         while legal_balls < 6:
             # Only break if 10 wickets have fallen or both batters are None
             if wickets == 10 or current_batters[0] is None or current_batters[1] is None:
