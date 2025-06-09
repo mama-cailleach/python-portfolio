@@ -624,23 +624,8 @@ def main():
                     current_batters[0] = None
                     current_batters[1] = None
                     break
-        if batters_yet:
-            print("Choose next batter in from:")
-            for idx, num in enumerate(batters_yet, 1):
-                p = batting_first.players[num]
-                print(f"{idx}: {num} {p.name}")
-            while True:
-                try:
-                    next_batter_idx = int(input("Enter order number of next batter: "))
-                    if not (1 <= next_batter_idx <= len(batters_yet)):
-                        print("you can't do that try again.")
-                        continue
-                    next_batter_num = batters_yet[next_batter_idx-1]
-                    break
-                except:
-                    print("you can't do that try again.")
         # Replace the OUT batter in current_batters with the new batter
-        current_batters[0] = batting_first.players[next_batter_num]
+        #current_batters[0] = batting_first.players[next_batter_num]
     else:
         # No more available batters, set both to None
         current_batters[0] = None
@@ -652,7 +637,7 @@ def main():
         prev_bowler = bowler_num
         over += 1
         if over > 0 and current_batters[0] and current_batters[1]:
-            current_batters.reverse()  # Swap ends
+            current_batters.reverse()  # Swap ends    
 
     innings1.print_batting_scorecard()
     innings1.print_bowling_scorecard()
