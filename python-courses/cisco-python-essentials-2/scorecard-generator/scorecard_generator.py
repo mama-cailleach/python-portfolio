@@ -143,43 +143,47 @@ class Innings:
         print(f"\nBatting: {self.batting_team.name}")
         columns = ["Player Name", "Dismissal", "Runs", "Balls", "4s", "6s", "SR"]
         print("{:<20}{:<25}{:>5}{:>6}{:>4}{:>4}{:>7}".format(*columns))
+        did_not_bat = []
         for num in self.batting_team.order:
             p = self.batting_team.players[num]
             bat = p.batting
-            balls = bat['balls']
-            sr = (bat['runs']*100/balls if balls else 0)
-            dismissal = bat['dismissal']
-            # Format dismissal to only show surnames for bowler/fielder, and always include bowler for c/lbw
-            if dismissal.startswith("c "):
-                # c Fielder b Bowler
-                parts = dismissal.split()
-                if len(parts) >= 4:
-                    fielder_surname = parts[1].split()[-1]
-                    bowler_surname = parts[3].split()[-1]
-                    dismissal = f"c {fielder_surname} b {bowler_surname}"
-            elif dismissal.startswith("b "):
-                bowler_surname = dismissal.split()[-1]
-                dismissal = f"b {bowler_surname}"
-            elif dismissal.startswith("lbw b "):
-                bowler_surname = dismissal.split()[-1]
-                dismissal = f"lbw b {bowler_surname}"
-            elif dismissal.startswith("run out("):
-                inside = dismissal[8:-1]
-                fielder_surname = inside.split()[-1]
-                dismissal = f"run out({fielder_surname})"
-            # Count 4s and 6s for this batter
-            fours = 0
-            sixes = 0
-            for be in self.balls:
-                if be.batter == p and be.event == "normal":
-                    if be.runs == 4:
-                        fours += 1
-                    elif be.runs == 6:
-                        sixes += 1
-            print("{:<20}{:<25}{:>5}{:>6}{:>4}{:>4}{:>7.2f}".format(
-                p.name, dismissal, bat['runs'], balls,
-                fours, sixes, sr
-            ))
+            # Only print if the player actually batted
+            if bat['balls'] > 0 or bat['runs'] > 0 or bat['dismissal'] != 'not out':
+                # Format dismissal to only show surnames for bowler/fielder, and always include bowler for c/lbw
+                dismissal = bat['dismissal']
+                if dismissal.startswith("c "):
+                    # c Fielder b Bowler
+                    parts = dismissal.split()
+                    if len(parts) >= 4:
+                        fielder_surname = parts[1].split()[-1]
+                        bowler_surname = parts[3].split()[-1]
+                        dismissal = f"c {fielder_surname} b {bowler_surname}"
+                elif dismissal.startswith("b "):
+                    bowler_surname = dismissal.split()[-1]
+                    dismissal = f"b {bowler_surname}"
+                elif dismissal.startswith("lbw b "):
+                    bowler_surname = dismissal.split()[-1]
+                    dismissal = f"lbw b {bowler_surname}"
+                elif dismissal.startswith("run out("):
+                    inside = dismissal[8:-1]
+                    fielder_surname = inside.split()[-1]
+                    dismissal = f"run out({fielder_surname})"
+                # Count 4s and 6s for this batter
+                fours = 0
+                sixes = 0
+                for be in self.balls:
+                    if be.batter == p and be.event == "normal":
+                        if be.runs == 4:
+                            fours += 1
+                        elif be.runs == 6:
+                            sixes += 1
+                sr = (bat['runs'] / bat['balls'] * 100) if bat['balls'] > 0 else 0.0
+                print("{:<20}{:<25}{:>5}{:>6}{:>4}{:>4}{:>7.2f}".format(
+                    p.name, dismissal, bat['runs'], bat['balls'],
+                    fours, sixes, sr
+                ))
+            else:
+                did_not_bat.append(p.name)
         # Extras
         extras_total = sum(self.extras.values())
         print("{:<20}{:>25}{:>5}".format("Extras", '', extras_total))
@@ -195,7 +199,6 @@ class Innings:
             overs_str = f"{full_overs}.{rem_balls} Ov"
         print(f"\nTotal: {overs_str} (RR: {rr:.2f}) {runs}/{wickets}")
         # Did not bat
-        did_not_bat = [p.name for n, p in self.batting_team.players.items() if n not in self.batting_team.order]
         if did_not_bat:
             print("Did not bat: " + ", ".join(did_not_bat))
         # Fall of wickets
@@ -306,9 +309,9 @@ def input_team(team_label):
 def select_openers(team):
     print(f"Select opening batters. Enter two numbers separated by space (choose by order number):")
     # Display players in XI order
-    for idx, num in enumerate(team.order, 1):
-        p = team.players[num]
-        print(f"{idx}: {num} {p.name}")
+    #for idx, num in enumerate(team.order, 1):
+    #    p = team.players[num]
+    #    print(f"{idx}: {num} {p.name}")
     while True:
         try:
             openers_idx = list(map(int, input().split()))
