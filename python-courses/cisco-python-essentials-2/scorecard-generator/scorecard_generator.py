@@ -347,10 +347,6 @@ def get_display_name(team, num):
 
 def select_openers(team):
     print(f"Select opening batters. Enter two numbers separated by space (choose by order number):")
-    # Display players in XI order
-    #for idx, num in enumerate(team.order, 1):
-    #    p = team.players[num]
-    #    print(f"{idx}: {num} {p.name}")
     while True:
         try:
             openers_idx = list(map(int, input().split()))
