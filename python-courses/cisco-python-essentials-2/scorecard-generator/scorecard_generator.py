@@ -211,7 +211,7 @@ class Innings:
                 player_name = p.name
                 if hasattr(self.batting_team, 'captain_number') and num == self.batting_team.captain_number:
                     player_name += " (c)"
-                did_not_bat.append(p.name)
+                did_not_bat.append(player_name)
         # Extras
         extras_total = sum(self.extras.values())
         print("{:<20}{:>25}{:>5}".format("Extras", '', extras_total))
