@@ -16,6 +16,7 @@ def list_xi_files():
 def load_xi(filepath):
     players = []
     wicketkeeper_number = None
+    captain_number = None
     with open(filepath, newline="", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for row in reader:
@@ -23,9 +24,12 @@ def load_xi(filepath):
             name = row['name']
             role = row.get('role', '').strip().lower() if 'role' in row else ''
             players.append({'number': number, 'name': name})
-            if role == 'wk':
+            # Detect wicketkeeper and captain
+            if 'wk' in role.split(','):
                 wicketkeeper_number = number
-    return players, wicketkeeper_number
+            if 'c' in role.split(','):
+                captain_number = number
+    return players, wicketkeeper_number, captain_number
 
 def choose_team_xi(label):
     xi_files = list_xi_files()
@@ -43,7 +47,7 @@ def choose_team_xi(label):
         print("Invalid selection.")
     team_name = xi_file[:-7]  # Remove _XI.csv
     xi_path = os.path.join(os.path.dirname(__file__), "./teams", xi_file)
-    players, wicketkeeper_number = load_xi(xi_path)
+    players, wicketkeeper_number, captain_number = load_xi(xi_path)
     team = Team(team_name)
     order = []
     for p in players:
@@ -51,6 +55,7 @@ def choose_team_xi(label):
         order.append(p['number'])
     team.order = order  # Set batting order as per CSV
     team.wicketkeeper_number = wicketkeeper_number  # Set wicketkeeper shirt number
+    team.captain_number = captain_number  # Set captain shirt number
     return team
 
 def safe_int(prompt, valid=None):
@@ -96,7 +101,8 @@ class Team:
         self.players = {}  # number: Player
         self.order = []    # batting order
         self.bowler_order = []
-        self.wicketkeeper_number = None  # Add this attribute
+        self.wicketkeeper_number = None
+        self.captain_number = None  # Add this attribute
 
     def add_player(self, player):
         self.players[player.number] = player
@@ -157,6 +163,10 @@ class Innings:
             bat = p.batting
             # Only print if the player actually batted
             if bat['balls'] > 0 or bat['runs'] > 0 or bat['dismissal'] != 'not out':
+                # Add (c) to captain's name
+                player_name = p.name
+                if hasattr(self.batting_team, 'captain_number') and num == self.batting_team.captain_number:
+                    player_name += " (c)"
                 # Format dismissal to only show surnames for bowler/fielder, and always include bowler for c/lbw/st
                 dismissal = bat['dismissal']
                 if dismissal.startswith("c "):
@@ -194,10 +204,12 @@ class Innings:
                             sixes += 1
                 sr = (bat['runs'] / bat['balls'] * 100) if bat['balls'] > 0 else 0.0
                 print("{:<20}{:<25}{:>5}{:>6}{:>4}{:>4}{:>7.2f}".format(
-                    p.name, dismissal, bat['runs'], bat['balls'],
+                    player_name, dismissal, bat['runs'], bat['balls'],
                     fours, sixes, sr
                 ))
             else:
+                if hasattr(self.batting_team, 'captain_number') and num == self.batting_team.captain_number:
+                    player_name += " (c)"
                 did_not_bat.append(p.name)
         # Extras
         extras_total = sum(self.extras.values())
