@@ -338,6 +338,15 @@ def input_team(team_label):
         print(f"Team saved to {filepath}")
     return team
 
+def get_display_name(team, num):
+    p = team.players[num]
+    name = p.name
+    if hasattr(team, 'captain_number') and num == team.captain_number:
+        name += " (c)"
+    if hasattr(team, 'wicketkeeper_number') and num == team.wicketkeeper_number:
+        name += " †"
+    return name
+
 def select_openers(team):
     print(f"Select opening batters. Enter two numbers separated by space (choose by order number):")
     # Display players in XI order
@@ -364,11 +373,10 @@ def select_bowler(bowling_team, over, prev_bowler, bowler_overs):
     print(f"\nSelect bowler for over {over+1} from {bowling_team.name}:")
     eligible = []
     for idx, num in enumerate(bowling_team.order, 1):
-        p = bowling_team.players[num]
         overs_bowled = len(bowler_overs[num])
         last_bowled = bowler_overs[num][-1] if bowler_overs[num] else -2
         can_bowl = overs_bowled < MAX_BOWLER_OVERS and (last_bowled < over-1 or last_bowled == -2)
-        print(f"{idx}: {num} {p.name} - {overs_bowled} overs bowled", "(resting)" if not can_bowl else "")
+        print(f"{idx}: {num} {get_display_name(bowling_team, num)} - {overs_bowled} overs bowled", "(resting)" if not can_bowl else "")
         if can_bowl:
             eligible.append(idx)
     while True:
@@ -514,13 +522,7 @@ def main():
     print(f"\nFirst Innings: {batting_first.name} Batting")
     print("Players available to open the batting:")
     for idx, num in enumerate(batting_first.order, 1):
-        p = batting_first.players[num]
-        player_name = p.name
-        if hasattr(batting_first, 'captain_number') and num == batting_first.captain_number:
-            player_name += " (c)"
-        if hasattr(batting_first, 'wicketkeeper_number') and num == batting_first.wicketkeeper_number:
-            player_name += " †"
-        print(f"{idx}: {num} {player_name}")
+        print(f"{idx}: {num} {get_display_name(batting_first, num)}")
 
     innings1 = Innings(batting_first, bowling_first)
 
@@ -679,13 +681,7 @@ def main():
                 if batters_yet:
                     print("Choose next batter in from:")
                     for idx, num in enumerate(batters_yet, 1):
-                        p = batting_first.players[num]
-                        player_name = p.name
-                        if hasattr(batting_first, 'captain_number') and num == batting_first.captain_number:
-                            player_name += " (c)"
-                        if hasattr(batting_first, 'wicketkeeper_number') and num == batting_first.wicketkeeper_number:
-                            player_name += " †"
-                        print(f"{idx}: {num} {player_name}")
+                        print(f"{idx}: {num} {get_display_name(batting_first, num)}")
                     while True:
                         try:
                             next_batter_idx = int(input("Enter order number of next batter: "))
