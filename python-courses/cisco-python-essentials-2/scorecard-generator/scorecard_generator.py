@@ -15,11 +15,17 @@ def list_xi_files():
 
 def load_xi(filepath):
     players = []
+    wicketkeeper_number = None
     with open(filepath, newline="", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for row in reader:
-            players.append({'number': int(row['number']), 'name': row['name']})
-    return players
+            number = int(row['number'])
+            name = row['name']
+            role = row.get('role', '').strip().lower() if 'role' in row else ''
+            players.append({'number': number, 'name': name})
+            if role == 'wk':
+                wicketkeeper_number = number
+    return players, wicketkeeper_number
 
 def choose_team_xi(label):
     xi_files = list_xi_files()
@@ -37,13 +43,14 @@ def choose_team_xi(label):
         print("Invalid selection.")
     team_name = xi_file[:-7]  # Remove _XI.csv
     xi_path = os.path.join(os.path.dirname(__file__), "./teams", xi_file)
-    players = load_xi(xi_path)
+    players, wicketkeeper_number = load_xi(xi_path)
     team = Team(team_name)
     order = []
     for p in players:
         team.add_player(Player(p['number'], p['name']))
         order.append(p['number'])
     team.order = order  # Set batting order as per CSV
+    team.wicketkeeper_number = wicketkeeper_number  # Set wicketkeeper shirt number
     return team
 
 def safe_int(prompt, valid=None):
@@ -89,6 +96,7 @@ class Team:
         self.players = {}  # number: Player
         self.order = []    # batting order
         self.bowler_order = []
+        self.wicketkeeper_number = None  # Add this attribute
 
     def add_player(self, player):
         self.players[player.number] = player
@@ -149,7 +157,7 @@ class Innings:
             bat = p.batting
             # Only print if the player actually batted
             if bat['balls'] > 0 or bat['runs'] > 0 or bat['dismissal'] != 'not out':
-                # Format dismissal to only show surnames for bowler/fielder, and always include bowler for c/lbw
+                # Format dismissal to only show surnames for bowler/fielder, and always include bowler for c/lbw/st
                 dismissal = bat['dismissal']
                 if dismissal.startswith("c "):
                     # c Fielder b Bowler
@@ -158,6 +166,13 @@ class Innings:
                         fielder_surname = parts[1].split()[-1]
                         bowler_surname = parts[3].split()[-1]
                         dismissal = f"c {fielder_surname} b {bowler_surname}"
+                elif dismissal.startswith("st "):
+                    # st Wicketkeeper b Bowler
+                    parts = dismissal.split()
+                    if len(parts) >= 4:
+                        wk_surname = parts[1].split()[-1]
+                        bowler_surname = parts[3].split()[-1]
+                        dismissal = f"st {wk_surname} b {bowler_surname}"
                 elif dismissal.startswith("lbw b "):
                     bowler_surname = dismissal.split()[-1]
                     dismissal = f"lbw b {bowler_surname}"
@@ -364,7 +379,7 @@ def input_ball(batters, bowler, over_num=None, ball_num=None, team=None):
     runs, event_type, fielders = 0, "normal", []
     swapped = False
     if event in ['w', 'W']:
-        wicket_type = input("Wicket type (bowled, caught, lbw, run out): ").lower()
+        wicket_type = input("Wicket type (bowled, caught, lbw, run out, stumped): ").lower()
         if wicket_type == "bowled":
             event_type = "wicket"
             fielders = [bowler.name]
@@ -381,6 +396,15 @@ def input_ball(batters, bowler, over_num=None, ball_num=None, team=None):
             fielder = team.get_player(fielder_num).name if team and fielder_num in team.players else str(fielder_num)
             event_type = "wicket"
             fielders = [fielder]
+        elif wicket_type == "stumped":
+            # Use the wicketkeeper from the team, no prompt
+            if team and getattr(team, 'wicketkeeper_number', None) is not None:
+                wicketkeeper = team.get_player(team.wicketkeeper_number).name
+            else:
+                print("No wicketkeeper set for this team.")
+                return input_ball(batters, bowler, over_num, ball_num, team)
+            event_type = "wicket"
+            fielders = [wicketkeeper, bowler.name]
         else:
             print("you can't do that try again.")
             return input_ball(batters, bowler, over_num, ball_num, team)
@@ -572,10 +596,31 @@ def main():
                     batter.batting['dismissal'] = f"lbw b {bowler_surname}"
                     bowler.bowling['wickets'] += 1
                 elif len(fielders) == 2:
-                    fielder_surname = fielders[0].split()[-1]
-                    bowler_surname = bowler.name.split()[-1]
-                    batter.batting['dismissal'] = f"c {fielder_surname} b {bowler_surname}"
-                    bowler.bowling['wickets'] += 1
+                    # Check for stumped: if this was a stumping, fielders[0] is wicketkeeper, fielders[1] is bowler
+                    # We'll treat "stumped" as a separate case by checking if the input_ball logic set it up
+                    # We'll assume that if the wicketkeeper is not the bowler, and this was entered as "stumped", it's a stumping
+                    # To distinguish, let's check if the wicketkeeper is not the bowler and not "lbw"
+                    if ' ' in fielders[0] and fielders[0] != bowler.name and not (fielders[0] == "lbw"):
+                        # This could be caught or stumped, but for stumped, input_ball will have set this up
+                        # We'll check if the previous input was "stumped" by checking if the user entered "stumped"
+                        # Instead, let's check if the main loop can distinguish, so let's add a check here:
+                        # If this is a stumping, the previous wicket_type was "stumped", but we don't have that info here.
+                        # So, let's use a convention: if the wicketkeeper's name is present, and the bowler is not the same, treat as stumped
+                        # We'll use the same logic as for caught, but format as st ... b ...
+                        wicketkeeper_surname = fielders[0].split()[-1]
+                        bowler_surname = bowler.name.split()[-1]
+                        # If the wicketkeeper is not the bowler, treat as stumped
+                        if fielders[0] != bowler.name:
+                            batter.batting['dismissal'] = f"st {wicketkeeper_surname} b {bowler_surname}"
+                        else:
+                            fielder_surname = fielders[0].split()[-1]
+                            batter.batting['dismissal'] = f"c {fielder_surname} b {bowler_surname}"
+                        bowler.bowling['wickets'] += 1
+                    else:
+                        fielder_surname = fielders[0].split()[-1]
+                        bowler_surname = bowler.name.split()[-1]
+                        batter.batting['dismissal'] = f"c {fielder_surname} b {bowler_surname}"
+                        bowler.bowling['wickets'] += 1
                 elif fielders and "run out" in fielders[0].lower():
                     batter.batting['dismissal'] = f"run out({fielders[0]})"
                 elif len(fielders) == 1:
