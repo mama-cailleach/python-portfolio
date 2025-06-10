@@ -208,6 +208,7 @@ class Innings:
                     fours, sixes, sr
                 ))
             else:
+                player_name = p.name
                 if hasattr(self.batting_team, 'captain_number') and num == self.batting_team.captain_number:
                     player_name += " (c)"
                 did_not_bat.append(p.name)
