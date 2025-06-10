@@ -158,12 +158,12 @@ class Innings:
                         fielder_surname = parts[1].split()[-1]
                         bowler_surname = parts[3].split()[-1]
                         dismissal = f"c {fielder_surname} b {bowler_surname}"
-                elif dismissal.startswith("b "):
-                    bowler_surname = dismissal.split()[-1]
-                    dismissal = f"b {bowler_surname}"
                 elif dismissal.startswith("lbw b "):
                     bowler_surname = dismissal.split()[-1]
                     dismissal = f"lbw b {bowler_surname}"
+                elif dismissal.startswith("b "):
+                    bowler_surname = dismissal.split()[-1]
+                    dismissal = f"b {bowler_surname}"
                 elif dismissal.startswith("run out("):
                     inside = dismissal[8:-1]
                     fielder_surname = inside.split()[-1]
@@ -375,7 +375,7 @@ def input_ball(batters, bowler, over_num=None, ball_num=None, team=None):
             fielders = [fielder, bowler.name]
         elif wicket_type == "lbw":
             event_type = "wicket"
-            fielders = [bowler.name]
+            fielders = ["lbw", bowler.name]
         elif wicket_type == "run out":
             fielder_num = int(input("Fielder shirt number: "))
             fielder = team.get_player(fielder_num).name if team and fielder_num in team.players else str(fielder_num)
@@ -572,8 +572,9 @@ def main():
                     bowler_surname = bowler.name.split()[-1]
                     batter.batting['dismissal'] = f"c {fielder_surname} b {bowler_surname}"
                     bowler.bowling['wickets'] += 1
-                elif fielders and "lbw" in fielders[0].lower():
-                    batter.batting['dismissal'] = f"lbw b {bowler.name.split()[-1]}"
+                elif len(fielders) >= 2 and fielders[0] == "lbw":
+                    bowler_surname = bowler.name.split()[-1]
+                    batter.batting['dismissal'] = f"lbw b {bowler_surname}"
                     bowler.bowling['wickets'] += 1
                 elif fielders and "run out" in fielders[0].lower():
                     batter.batting['dismissal'] = f"run out({fielders[0]})"
