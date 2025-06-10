@@ -35,6 +35,11 @@ A console-based Python application for creating and analyzing detailed cricket T
     - **Bowling:** Bowler, Overs, Maidens, Runs, Wkts, Econ, Dots, 4s, 6s, Wides, Noballs
     - Extras, totals, "Did not bat", and fall of wickets
   - Output formatting is robust and readable in the console.
+  - **Captain and Wicketkeeper Markings:**  
+    - Captains are shown as `(c)`, wicketkeepers as `†`, and a player who is both as `(c)†`, e.g.  
+      `16 Jos Buttler (c)†`  
+      `18 Virat Kohli (c)`  
+      `7 MS Dhoni †`
 
 - **Robust Error Handling**
   - Friendly prompts and `"you can't do that try again."` messages for invalid or inconsistent inputs.
@@ -71,6 +76,36 @@ A console-based Python application for creating and analyzing detailed cricket T
 
 ---
 
+## Team CSV File Format
+
+Teams and starting XIs are stored as CSV files in the `teams/` folder.
+
+**Format:**  
+```
+number,name,role
+16,Jos Buttler,"c,wk"
+18,Virat Kohli,"c"
+7,MS Dhoni,"wk"
+33,Player Name,
+```
+- `number`: Player's shirt number (must be unique).
+- `name`: Full player name.
+- `role`: Optional. Comma-separated list. Use `c` for captain, `wk` for wicketkeeper.  
+  - For a captain-wicketkeeper, use `"c,wk"` (order does not matter).
+  - If left blank, the player has no special role.
+
+### How roles are displayed
+
+- Captain only: `(c)`
+- Wicketkeeper only: `†`
+- Captain & wicketkeeper: `(c)†` (no space before `†`)
+- Example:  
+  `16 Jos Buttler (c)†`  
+  `7 MS Dhoni †`  
+  `18 Virat Kohli (c)`
+
+---
+
 ## File Structure
 
 - [`scorecard_generator.py`](scorecard_generator.py) — main script for running the scorecard generator
@@ -84,7 +119,7 @@ A console-based Python application for creating and analyzing detailed cricket T
 ```
 Batting: Team A
 Player Name         Dismissal                Runs Balls 4s  6s     SR
-Alice Smith         c Jones b Patel             35    27  4   2  129.63
+Jos Buttler (c)†    c Jones b Patel             35    27  4   2  129.63
 ...
 Extras                                         11
 Total: 2.0 Ov (RR: 7.80) 156/6
@@ -108,6 +143,7 @@ Kevin Patel         1.0      0    15   2   7.50    3   1  0     1      0
 - Added clear messages for early innings or over endings (e.g., all out).
 - Robust handling for team loading, input, and batting order management.
 - Expanded prompts and error messages for better user experience.
+- Consistent display of captain/wicketkeeper roles in all name lists.
 
 ---
 
