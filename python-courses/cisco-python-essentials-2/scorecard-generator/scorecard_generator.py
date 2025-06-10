@@ -567,14 +567,14 @@ def main():
                 batter.batting['balls'] += 1
                 bowler.bowling['balls'] += 1
                 # Fix dismissal string logic
-                if len(fielders) == 2:
+                if len(fielders) >= 2 and fielders[0] == "lbw":
+                    bowler_surname = bowler.name.split()[-1]
+                    batter.batting['dismissal'] = f"lbw b {bowler_surname}"
+                    bowler.bowling['wickets'] += 1
+                elif len(fielders) == 2:
                     fielder_surname = fielders[0].split()[-1]
                     bowler_surname = bowler.name.split()[-1]
                     batter.batting['dismissal'] = f"c {fielder_surname} b {bowler_surname}"
-                    bowler.bowling['wickets'] += 1
-                elif len(fielders) >= 2 and fielders[0] == "lbw":
-                    bowler_surname = bowler.name.split()[-1]
-                    batter.batting['dismissal'] = f"lbw b {bowler_surname}"
                     bowler.bowling['wickets'] += 1
                 elif fielders and "run out" in fielders[0].lower():
                     batter.batting['dismissal'] = f"run out({fielders[0]})"
