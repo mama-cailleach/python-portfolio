@@ -167,6 +167,8 @@ class Innings:
                 player_name = p.name
                 if hasattr(self.batting_team, 'captain_number') and num == self.batting_team.captain_number:
                     player_name += " (c)"
+                if hasattr(self.batting_team, 'wicketkeeper_number') and num == self.batting_team.wicketkeeper_number:
+                    player_name += " †"
                 # Format dismissal to only show surnames for bowler/fielder, and always include bowler for c/lbw/st
                 dismissal = bat['dismissal']
                 if dismissal.startswith("c "):
@@ -211,6 +213,8 @@ class Innings:
                 player_name = p.name
                 if hasattr(self.batting_team, 'captain_number') and num == self.batting_team.captain_number:
                     player_name += " (c)"
+                if hasattr(self.batting_team, 'wicketkeeper_number') and num == self.batting_team.wicketkeeper_number:
+                    player_name += " †"
                 did_not_bat.append(player_name)
         # Extras
         extras_total = sum(self.extras.values())
