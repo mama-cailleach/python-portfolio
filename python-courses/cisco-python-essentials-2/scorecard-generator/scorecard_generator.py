@@ -184,7 +184,7 @@ class Innings:
                     if len(parts) >= 4:
                         wk_surname = parts[1].split()[-1]
                         bowler_surname = parts[3].split()[-1]
-                        dismissal = f"st {wk_surname} b {bowler_surname}"
+                        dismissal = f"st †{wk_surname} b {bowler_surname}"
                 elif dismissal.startswith("lbw b "):
                     bowler_surname = dismissal.split()[-1]
                     dismissal = f"lbw b {bowler_surname}"
@@ -237,7 +237,7 @@ class Innings:
         print("Fall of wickets:")
         for i, fw in enumerate(self.fall_of_wickets, 1):
             runs, batsman, bowler, over = fw
-            print(f" {i}-{runs} ({bowler}, {over:.1f} ov)", end=",")
+            print(f" {i}-{runs} ({batsman}, {over:.1f} ov)", end=",")
         print("\n")
 
     def print_bowling_scorecard(self):
@@ -515,7 +515,12 @@ def main():
     print("Players available to open the batting:")
     for idx, num in enumerate(batting_first.order, 1):
         p = batting_first.players[num]
-        print(f"{idx}: {num} {p.name}")
+        player_name = p.name
+        if hasattr(batting_first, 'captain_number') and num == batting_first.captain_number:
+            player_name += " (c)"
+        if hasattr(batting_first, 'wicketkeeper_number') and num == batting_first.wicketkeeper_number:
+            player_name += " †"
+        print(f"{idx}: {num} {player_name}")
 
     innings1 = Innings(batting_first, bowling_first)
 
@@ -675,7 +680,12 @@ def main():
                     print("Choose next batter in from:")
                     for idx, num in enumerate(batters_yet, 1):
                         p = batting_first.players[num]
-                        print(f"{idx}: {num} {p.name}")
+                        player_name = p.name
+                        if hasattr(batting_first, 'captain_number') and num == batting_first.captain_number:
+                            player_name += " (c)"
+                        if hasattr(batting_first, 'wicketkeeper_number') and num == batting_first.wicketkeeper_number:
+                            player_name += " †"
+                        print(f"{idx}: {num} {player_name}")
                     while True:
                         try:
                             next_batter_idx = int(input("Enter order number of next batter: "))
