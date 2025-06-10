@@ -527,7 +527,7 @@ def main():
         else:
             print("Invalid selection.")
 
-    # Show available players for opening selection
+    # First Innings
     print(f"\nFirst Innings: {batting_first.name} Batting")
     print("Players available to open the batting:")
     for idx, num in enumerate(batting_first.order, 1):
@@ -634,28 +634,23 @@ def main():
                         batter.batting['dismissal'] = f"c {fielder_surname} b {bowler_surname}"
                     bowler.bowling['wickets'] += 1
                 elif len(fielders) >= 2 and fielders[0] == "lbw":
-                    bowler_surname = dismissal.split()[-1]
-                    dismissal = f"lbw b {bowler_surname}"
+                    bowler_surname = bowler.name.split()[-1]
+                    batter.batting['dismissal'] = f"lbw b {bowler_surname}"
+                    bowler.bowling['wickets'] += 1
                 elif len(fielders) == 2:
-                    # Check for stumped: if this was a stumping, fielders[0] is wicketkeeper, fielders[1] is bowler
-                    # We'll treat "stumped" as a separate case by checking if the input_ball logic set it up
-                    # We'll assume that if the wicketkeeper is not the bowler, and this was entered as "stumped", it's a stumping
-                    # To distinguish, let's check if the wicketkeeper is not the bowler and not "lbw"
                     if ' ' in fielders[0] and fielders[0] != bowler.name and not (fielders[0] == "lbw"):
-                        # This could be caught or stumped, but for stumped, input_ball will have set this up
-                        # We'll check if the previous input was "stumped" by checking if the user entered "stumped"
-                        # Instead, let's check if the main loop can distinguish, so let's add a check here:
-                        # If this is a stumping, the previous wicket_type was "stumped", but we don't have that info here.
-                        # So, let's use a convention: if the wicketkeeper's name is present, and the bowler is not the same, treat as stumped
-                        # We'll use the same logic as for caught, but format as st ... b ...
                         wicketkeeper_surname = fielders[0].split()[-1]
                         bowler_surname = bowler.name.split()[-1]
-                        # If the wicketkeeper is not the bowler, treat as stumped
                         if fielders[0] != bowler.name:
                             batter.batting['dismissal'] = f"st {wicketkeeper_surname} b {bowler_surname}"
                         else:
                             fielder_surname = fielders[0].split()[-1]
                             batter.batting['dismissal'] = f"c {fielder_surname} b {bowler_surname}"
+                        bowler.bowling['wickets'] += 1
+                    else:
+                        fielder_surname = fielders[0].split()[-1]
+                        bowler_surname = bowler.name.split()[-1]
+                        batter.batting['dismissal'] = f"c {fielder_surname} b {bowler_surname}"
                         bowler.bowling['wickets'] += 1
                 elif fielders and "run out" in fielders[0].lower():
                     batter.batting['dismissal'] = f"run out({fielders[0]})"
@@ -685,7 +680,6 @@ def main():
                 # After a wicket has fallen, find batters who are neither out nor the non-striker
                 non_striker = current_batters[1]
                 batters_batted = [b.number for b in batting_first.players.values() if b.batting['balls'] > 0 or b.batting['dismissal'] != 'not out']
-                # Correct: Exclude the non-striker from batters_yet, regardless of whether they've faced a ball yet
                 batters_yet = [
                 num for num in batting_first.order
                 if num not in batters_batted and (non_striker is None or num != non_striker.number)
@@ -724,6 +718,193 @@ def main():
 
     innings1.print_batting_scorecard()
     innings1.print_bowling_scorecard()
+
+    # Second Innings
+    print(f"\nSecond Innings: {bowling_first.name} Batting")
+    print("Players available to open the batting:")
+    for idx, num in enumerate(bowling_first.order, 1):
+        print(f"{idx}: {num} {get_display_name(bowling_first, num)}")
+
+    innings2 = Innings(bowling_first, batting_first)
+
+    openers2 = select_openers(bowling_first)
+    striker2, non_striker2 = bowling_first.players[openers2[0]], bowling_first.players[openers2[1]]
+    current_batters2 = [striker2, non_striker2]
+    batters_yet2 = [num for num in bowling_first.order if num not in bowling_first.order[:2]]
+    bowler_overs2 = defaultdict(list)
+    wickets2 = 0
+    over2 = 0
+    prev_bowler2 = None
+    while over2 < MAX_OVERS and wickets2 < 10:
+        bowler_num2 = select_bowler(batting_first, over2, prev_bowler2, bowler_overs2)
+        bowler2 = batting_first.players[bowler_num2]
+        balls_this_over2 = 0
+        over_runs2 = 0
+        over_dots2 = 0
+        over_start_balls2 = len(innings2.balls)
+        legal_balls2 = 0
+        ball2 = 1
+        over_ended_early2 = False
+        while legal_balls2 < 6:
+            if wickets2 == 10 or current_batters2[0] is None or current_batters2[1] is None:
+                over_ended_early2 = True
+                break
+            result2 = input_ball(current_batters2, bowler2, over2, ball2, batting_first)
+            if len(result2) == 4:
+                runs2, event_type2, fielders2, swapped2 = result2
+            else:
+                runs2, event_type2, fielders2 = result2
+                swapped2 = False
+            if event_type2 == "end":
+                over_ended_early2 = True
+                break
+            batter2 = current_batters2[0]
+            event2 = BallEvent(over2, ball2, bowler2, batter2, runs2, event_type2, fielders2)
+            innings2.add_ball(event2)
+            batter2.batted = True
+            bowler2.bowled = True
+            balls_this_over2 += 1
+            is_legal2 = event_type2 not in ["wide", "no ball"]
+            if event_type2 == "normal":
+                batter2.batting['runs'] += runs2
+                batter2.batting['balls'] += 1
+                if runs2 == 4: bowler2.bowling['4s'] += 1
+                if runs2 == 6: bowler2.bowling['6s'] += 1
+                if runs2 == 0:
+                    bowler2.bowling['dots'] += 1
+                    over_dots2 += 1
+                bowler2.bowling['balls'] += 1
+                bowler2.bowling['runs'] += runs2
+                if runs2 == 4: bowler2.bowling['4s'] += 1
+                if runs2 == 6: bowler2.bowling['6s'] += 1
+                over_runs2 += runs2
+                if runs2 % 2 == 1:
+                    current_batters2.reverse()
+                legal_balls2 += 1
+                ball2 += 1
+            elif event_type2 == "wide":
+                innings2.extras['wides'] += runs2
+                bowler2.bowling['wides'] += runs2
+                bowler2.bowling['runs'] += runs2
+            elif event_type2 == "no ball":
+                innings2.extras['no balls'] += runs2
+                bowler2.bowling['noballs'] += runs2
+                bowler2.bowling['runs'] += runs2
+            elif event_type2 == "bye":
+                innings2.extras['byes'] += runs2
+                batter2.batting['balls'] += 1
+                bowler2.bowling['balls'] += 1
+                over_runs2 += runs2
+                if swapped2:
+                    current_batters2.reverse()
+                legal_balls2 += 1
+                ball2 += 1
+            elif event_type2 == "leg bye":
+                innings2.extras['leg byes'] += runs2
+                batter2.batting['balls'] += 1
+                bowler2.bowling['balls'] += 1
+                over_runs2 += runs2
+                if swapped2:
+                    current_batters2.reverse()
+                legal_balls2 += 1
+                ball2 += 1
+            elif event_type2 == "wicket":
+                batter2.batting['balls'] += 1
+                bowler2.bowling['balls'] += 1
+                # Handle c & b
+                if len(fielders2) == 1 and isinstance(fielders2[0], tuple):
+                    fielder, bowler_name, is_c_and_b = fielders2[0]
+                    bowler_surname = bowler2.name.split()[-1]
+                    if is_c_and_b:
+                        batter2.batting['dismissal'] = f"c & b {bowler_surname}"
+                    else:
+                        fielder_surname = fielder.split()[-1]
+                        batter2.batting['dismissal'] = f"c {fielder_surname} b {bowler_surname}"
+                    bowler2.bowling['wickets'] += 1
+                elif len(fielders2) >= 2 and fielders2[0] == "lbw":
+                    bowler_surname = bowler2.name.split()[-1]
+                    batter2.batting['dismissal'] = f"lbw b {bowler_surname}"
+                    bowler2.bowling['wickets'] += 1
+                elif len(fielders2) == 2:
+                    if ' ' in fielders2[0] and fielders2[0] != bowler2.name and not (fielders2[0] == "lbw"):
+                        wicketkeeper_surname = fielders2[0].split()[-1]
+                        bowler_surname = bowler2.name.split()[-1]
+                        if fielders2[0] != bowler2.name:
+                            batter2.batting['dismissal'] = f"st {wicketkeeper_surname} b {bowler_surname}"
+                        else:
+                            fielder_surname = fielders2[0].split()[-1]
+                            batter2.batting['dismissal'] = f"c {fielder_surname} b {bowler_surname}"
+                        bowler2.bowling['wickets'] += 1
+                    else:
+                        fielder_surname = fielders2[0].split()[-1]
+                        bowler_surname = bowler2.name.split()[-1]
+                        batter2.batting['dismissal'] = f"c {fielder_surname} b {bowler_surname}"
+                        bowler2.bowling['wickets'] += 1
+                elif fielders2 and "run out" in fielders2[0].lower():
+                    batter2.batting['dismissal'] = f"run out({fielders2[0]})"
+                elif len(fielders2) == 1:
+                    if " " in fielders2[0] and fielders2[0] != bowler2.name:
+                        fielder_surname = fielders2[0].split()[-1]
+                        batter2.batting['dismissal'] = f"run out({fielder_surname})"
+                    else:
+                        bowler_surname = fielders2[0].split()[-1]
+                        batter2.batting['dismissal'] = f"b {bowler_surname}"
+                        bowler2.bowling['wickets'] += 1
+                else:
+                    batter2.batting['dismissal'] = "unknown"
+                runs_total2, _, _, _ = innings2.get_score()
+                curr_wickets2 = wickets2 + 1
+                print(f"\nWICKET! Score: {runs_total2}-{curr_wickets2} | {batter2.name} {batter2.batting['runs']}({batter2.batting['balls']})")
+                wickets2 += 1
+                innings2.fall_of_wickets.append((runs_total2, batter2.name, bowler2.name, over2 + ball2 / 10))
+                legal_balls2 += 1
+                ball2 += 1
+                if wickets2 == 10:
+                    current_batters2[0] = None
+                    current_batters2[1] = None
+                    over_ended_early2 = True
+                    break
+
+                non_striker2 = current_batters2[1]
+                batters_batted2 = [b.number for b in bowling_first.players.values() if b.batting['balls'] > 0 or b.batting['dismissal'] != 'not out']
+                batters_yet2 = [
+                    num for num in bowling_first.order
+                    if num not in batters_batted2 and (non_striker2 is None or num != non_striker2.number)
+                ]
+                if batters_yet2:
+                    print("Choose next batter in from:")
+                    for idx, num in enumerate(batters_yet2, 1):
+                        print(f"{idx}: {num} {get_display_name(bowling_first, num)}")
+                    while True:
+                        try:
+                            next_batter_idx2 = int(input("Enter order number of next batter: "))
+                            if not (1 <= next_batter_idx2 <= len(batters_yet2)):
+                                print("you can't do that try again.")
+                                continue
+                            next_batter_num2 = batters_yet2[next_batter_idx2-1]
+                            break
+                        except:
+                            print("you can't do that try again.")
+                    current_batters2[0] = bowling_first.players[next_batter_num2]
+                else:
+                    current_batters2[0] = None
+                    current_batters2[1] = None
+                    over_ended_early2 = True
+                    break
+        if over_ended_early2:
+            print("OVER ENDED EARLY (all out, no batters, or innings ended).")
+        else:
+            print("OVER FINISHED.")
+        bowler_overs2[bowler_num2].append(over2)
+        if over_runs2 == 0:
+            bowler2.bowling['maidens'] += 1
+        prev_bowler2 = bowler_num2
+        over2 += 1
+        if over2 > 0 and current_batters2[0] and current_batters2[1]:
+            current_batters2.reverse()
+
+    innings2.print_batting_scorecard()
+    innings2.print_bowling_scorecard()
 
 if __name__ == "__main__":
     main()
