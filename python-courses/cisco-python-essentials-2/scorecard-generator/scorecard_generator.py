@@ -163,15 +163,13 @@ class Innings:
             bat = p.batting
             # Only print if the player actually batted
             if bat['balls'] > 0 or bat['runs'] > 0 or bat['dismissal'] != 'not out':
-                # Add (c) to captain's name
-                player_name = p.name
-                if hasattr(self.batting_team, 'captain_number') and num == self.batting_team.captain_number:
-                    player_name += " (c)"
-                if hasattr(self.batting_team, 'wicketkeeper_number') and num == self.batting_team.wicketkeeper_number:
-                    player_name += " †"
+                player_name = get_display_name(self.batting_team, num)
                 # Format dismissal to only show surnames for bowler/fielder, and always include bowler for c/lbw/st
                 dismissal = bat['dismissal']
-                if dismissal.startswith("c "):
+                if dismissal.startswith("c & b "):
+                    bowler_surname = dismissal.split()[-1]
+                    dismissal = f"c & b {bowler_surname}"
+                elif dismissal.startswith("c "):
                     # c Fielder b Bowler
                     parts = dismissal.split()
                     if len(parts) >= 4:
@@ -210,12 +208,7 @@ class Innings:
                     fours, sixes, sr
                 ))
             else:
-                player_name = p.name
-                if hasattr(self.batting_team, 'captain_number') and num == self.batting_team.captain_number:
-                    player_name += " (c)"
-                if hasattr(self.batting_team, 'wicketkeeper_number') and num == self.batting_team.wicketkeeper_number:
-                    player_name += " †"
-                did_not_bat.append(player_name)
+                did_not_bat.append(get_display_name(self.batting_team, num))
         # Extras
         extras_total = sum(self.extras.values())
         print("{:<20}{:>25}{:>5}".format("Extras", '', extras_total))
@@ -338,12 +331,17 @@ def input_team(team_label):
         print(f"Team saved to {filepath}")
     return team
 
+#Helper function: naming symbols for wicket keeper and captain
 def get_display_name(team, num):
     p = team.players[num]
     name = p.name
-    if hasattr(team, 'captain_number') and num == team.captain_number:
+    is_captain = hasattr(team, 'captain_number') and num == team.captain_number
+    is_keeper = hasattr(team, 'wicketkeeper_number') and num == team.wicketkeeper_number
+    if is_captain and is_keeper:
+        name += " (c)†"
+    elif is_captain:
         name += " (c)"
-    if hasattr(team, 'wicketkeeper_number') and num == team.wicketkeeper_number:
+    elif is_keeper:
         name += " †"
     return name
 
@@ -409,10 +407,21 @@ def input_ball(batters, bowler, over_num=None, ball_num=None, team=None):
             event_type = "wicket"
             fielders = [bowler.name]
         elif wicket_type == "caught":
-            fielder_num = int(input("Fielder shirt number: "))
-            fielder = team.get_player(fielder_num).name if team and fielder_num in team.players else str(fielder_num)
+            fielder_input = input("Fielder shirt number (or 'bowler'): ").strip().lower()
+            if fielder_input == "bowler":
+                fielder = bowler.name
+                is_c_and_b = True
+            else:
+                try:
+                    fielder_num = int(fielder_input)
+                    fielder = team.get_player(fielder_num).name if team and fielder_num in team.players else str(fielder_num)
+                    is_c_and_b = (fielder_num == bowler.number)
+                except:
+                    print("you can't do that try again.")
+                    return input_ball(batters, bowler, over_num, ball_num, team)
             event_type = "wicket"
-            fielders = [fielder, bowler.name]
+            # Mark c&b by using a tuple (fielder, bowler, is_c_and_b)
+            fielders = [(fielder, bowler.name, is_c_and_b)]
         elif wicket_type == "lbw":
             event_type = "wicket"
             fielders = ["lbw", bowler.name]
@@ -614,11 +623,19 @@ def main():
             elif event_type == "wicket":
                 batter.batting['balls'] += 1
                 bowler.bowling['balls'] += 1
-                # Fix dismissal string logic
-                if len(fielders) >= 2 and fielders[0] == "lbw":
+                # Handle c & b
+                if len(fielders) == 1 and isinstance(fielders[0], tuple):
+                    fielder, bowler_name, is_c_and_b = fielders[0]
                     bowler_surname = bowler.name.split()[-1]
-                    batter.batting['dismissal'] = f"lbw b {bowler_surname}"
+                    if is_c_and_b:
+                        batter.batting['dismissal'] = f"c & b {bowler_surname}"
+                    else:
+                        fielder_surname = fielder.split()[-1]
+                        batter.batting['dismissal'] = f"c {fielder_surname} b {bowler_surname}"
                     bowler.bowling['wickets'] += 1
+                elif len(fielders) >= 2 and fielders[0] == "lbw":
+                    bowler_surname = dismissal.split()[-1]
+                    dismissal = f"lbw b {bowler_surname}"
                 elif len(fielders) == 2:
                     # Check for stumped: if this was a stumping, fielders[0] is wicketkeeper, fielders[1] is bowler
                     # We'll treat "stumped" as a separate case by checking if the input_ball logic set it up
@@ -639,11 +656,6 @@ def main():
                         else:
                             fielder_surname = fielders[0].split()[-1]
                             batter.batting['dismissal'] = f"c {fielder_surname} b {bowler_surname}"
-                        bowler.bowling['wickets'] += 1
-                    else:
-                        fielder_surname = fielders[0].split()[-1]
-                        bowler_surname = bowler.name.split()[-1]
-                        batter.batting['dismissal'] = f"c {fielder_surname} b {bowler_surname}"
                         bowler.bowling['wickets'] += 1
                 elif fielders and "run out" in fielders[0].lower():
                     batter.batting['dismissal'] = f"run out({fielders[0]})"
