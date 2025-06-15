@@ -54,8 +54,8 @@ def select_bowler(bowling_team, over, prev_bowler, bowler_overs):
     print(f"\nSelect bowler for over {over+1} from {bowling_team.name}:")
     eligible = []
     for idx, num in enumerate(bowling_team.order, 1):
-        overs_bowled = len(bowler_overs[num])
-        last_bowled = bowler_overs[num][-1] if bowler_overs[num] else -2
+        overs_bowled = len(bowler_overs.get(num, []))
+        last_bowled = bowler_overs.get(num, [-2])[-1] if bowler_overs.get(num) else -2
         can_bowl = overs_bowled < MAX_BOWLER_OVERS and (last_bowled < over-1 or last_bowled == -2)
         print(f"{idx}: {num} {get_display_name(bowling_team, num)} - {overs_bowled} overs bowled", "(resting)" if not can_bowl else "")
         if can_bowl:
