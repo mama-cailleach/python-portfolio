@@ -1,78 +1,111 @@
 # Cricket T20 Scorecard Generator
 
-A console-based Python application for creating and analyzing detailed cricket T20 scorecards. This tool is ideal for learning, coaching, recording matches, or just for fun!
+A console-based Python application for creating and analyzing detailed cricket T20 scorecards.  
+**Modular, professional Python codebase** for learning, coaching, match recording, and fun.
+
+---
+
+## Table of Contents
+
+- [Features](#features)
+- [Project Structure](#project-structure)
+- [Usage](#usage)
+- [Team CSV File Format](#team-csv-file-format)
+- [Example Output](#example-output)
+- [Changelog / Recent Improvements](#changelog--recent-improvements)
+- [Legacy Version](#legacy-version)
+- [To Improve / TODO](#to-improve--todo)
+- [Portfolio Note](#portfolio-note)
 
 ---
 
 ## Features
 
-- **Interactive Team Management (`teams_utils.py`):**
-  - Create and edit reusable teams and player squads.
-  - Enforce unique shirt numbers and valid player names.
-  - Easily manage squads larger than 11 (for selection flexibility).
-  - List, edit, and update teams from the console.
-  - Select and save a starting XI for a match, assigning captain and wicket-keeper roles.
-  - Stores teams and XIs in the `teams/` folder as CSV files for reuse.
+### Modular Design
 
-- **Interactive Team Setup (`scorecard_generator.py`):**
-  - Load playing XIs directly from CSV files created by `teams_utils.py`.
-  - Enter both teams (11 players each, with shirt numbers and names).
-  - [Optional] Enter teams manually if not using the team manager.
+- **All main match logic split into dedicated Python modules** (`scorecard_generator/`):
+    - `models.py` — data classes for teams, players, innings, ball events
+    - `team_utils.py` — XI loading and match utility functions
+    - `input_handler.py` — all robust user input and ball-by-ball prompts
+    - `game_logic.py` — match/innings logic and event processing
+    - `scorecard.py` — scorecard formatting and output
+    - `main.py` — entry point for playing a match
 
-- **Ball-by-Ball Input**
-  - Select opening batters and bowlers from ordered team lists.
-  - Input every ball of the innings: runs, wickets, extras (wides, no balls, byes, leg byes), with error checking and friendly prompts.
-  - T20-specific rules (demo version): 2 overs per match, 1 over max per bowler (adjustable).
-  - Handles striker/non-striker swaps correctly—including after overs and for odd runs/extras.
+### Team Management
 
-- **Wicket Handling**
-  - On each wicket, displays current score (`runs-wickets`), batter summary, and prompts for the next batter from only the eligible remaining players.
-  - Prevents non-striker from appearing as "yet to bat" after a wicket.
+- **Interactive team/squad management with `teams_utils.py` in the main folder**:
+    - Create/edit teams and squads, enforce unique shirt numbers
+    - Add more than 11 players per squad for flexible selection
+    - Assign captain and wicketkeeper roles, saved in CSV
+    - Select and save starting XIs for matches
+    - Teams and XIs saved as CSVs in `teams/`
 
-- **Scorecard Output**
-  - Professional-style batting and bowling scorecards:
-    - **Batting:** Player Name, Dismissal (cricket notation), Runs, Balls, 4s, 6s, Strike Rate
-    - **Bowling:** Bowler, Overs, Maidens, Runs, Wkts, Econ, Dots, 4s, 6s, Wides, Noballs
-    - Extras, totals, "Did not bat", and fall of wickets
-  - Output formatting is robust and readable in the console.
-  - **Captain and Wicketkeeper Markings:**  
-    - Captains are shown as `(c)`, wicketkeepers as `†`, and a player who is both as `(c)†`, e.g.  
-      `16 Jos Buttler (c)†`  
-      `18 Virat Kohli (c)`  
-      `7 MS Dhoni †`
+### Match Play & Scorecard Generation
 
-- **Robust Error Handling**
-  - Friendly prompts and `"you can't do that try again."` messages for invalid or inconsistent inputs.
-  - Prevents picking the same batter twice, ensures team order is preserved, and handles edge cases like all out or innings ended early.
+- **Interactive, robust match input:**
+    - Select openers and bowlers from loaded XIs
+    - Input every ball (runs, wickets, extras, byes, leg byes, robust no-ball logic)
+    - Accurate striker/non-striker swap logic
+    - Friendly, error-resilient prompts
 
-- **Modular Design**
-  - `scorecard_generator.py` – Main match/scorecard logic.
-  - `teams_utils.py` – Team/squad management and XI selector utility (run directly for team management).
-  - `teams/` – Folder for reusable team/squad/XI CSVs.
+- **Professional scorecard output:**
+    - Batting and bowling scorecards with correct cricket notation
+    - Displays (c) for captain, † for wicketkeeper
+    - Handles all edge cases: early over/innings ends, did-not-bat, etc.
+
+### Legacy Support
+
+- The old monolithic script is preserved in a `legacy/` folder for historical context.
+
+---
+
+## Project Structure
+
+```
+scorecard-generator/
+│
+├── teams_utils.py                  # Interactive team/squad manager (run to create/edit teams, pick XIs)
+├── teams/                          # Folder for team and XI CSVs
+│
+├── scorecard_generator/
+│   ├── __init__.py
+|   ├── main.py                     # Main entry point for a match
+|   ├── models.py                   # Data structures (Team, Player, Innings, BallEvent)
+│   ├── team_utils.py               # XI loader and team utility functions (for match play only)
+│   ├── input_handler.py            # All robust user input and validation logic
+│   ├── game_logic.py               # Core match/innings logic (ball-by-ball processing)
+│   ├── scorecard.py                # Output and formatting for batting/bowling scorecards
+│
+├── legacy/
+│   └── scorecard_generator.py      # The original all-in-one script (not maintained)
+│
+├── README.md
+```
 
 ---
 
 ## Usage
 
-### Team Management (Recommended)
+### 1. Team Management & Squad Selection
 
-1. Run the team manager to create/edit teams and pick your XI:
-   ```bash
-   python teams_utils.py
-   ```
-   - Create or edit teams and squads
-   - Select a starting XI and assign captain/wicket-keeper
-   - XIs saved as CSV in the `teams/` folder
+- **Run the team/squad manager:**
+  ```bash
+  python teams_utils.py
+  ```
+  - Create/edit teams and squads
+  - Assign captains and wicketkeepers
+  - Select and save starting XI for a match
+  - Teams and XIs saved as CSVs in `teams/`
 
-### Scorecard Generator
+### 2. Run the Scorecard Generator
 
-2. Run the scorecard generator:
-   ```bash
-   python scorecard_generator.py
-   ```
-   - Load XIs from file or enter manually
-   - Follow prompts for toss, openers, bowlers, and ball-by-ball input
-   - See full batting and bowling scorecards after the innings
+- **Play a match using the modular system:**
+  ```bash
+  python main.py
+  ```
+  - Loads XIs from CSV
+  - Prompts for toss, openers, bowlers, and each ball
+  - Shows professional scorecards at innings end
 
 ---
 
@@ -88,29 +121,18 @@ number,name,role
 7,MS Dhoni,"wk"
 33,Player Name,
 ```
-- `number`: Player's shirt number (must be unique).
-- `name`: Full player name.
-- `role`: Optional. Comma-separated list. Use `c` for captain, `wk` for wicketkeeper.  
-  - For a captain-wicketkeeper, use `"c,wk"` (order does not matter).
-  - If left blank, the player has no special role.
+- `number`: Player's shirt number (unique within team)
+- `name`: Full player name
+- `role`: Optional (`c`, `wk`, or both as `c,wk`)
 
-### How roles are displayed
-
+Roles are displayed as:
 - Captain only: `(c)`
 - Wicketkeeper only: `†`
-- Captain & wicketkeeper: `(c)†` (no space before `†`)
+- Captain & wicketkeeper: `(c)†`
 - Example:  
   `16 Jos Buttler (c)†`  
   `7 MS Dhoni †`  
   `18 Virat Kohli (c)`
-
----
-
-## File Structure
-
-- [`scorecard_generator.py`](scorecard_generator.py) — main script for running the scorecard generator
-- [`teams_utils.py`](teams_utils.py) — team/squad manager, XI selector utility
-- [`teams/`](teams/) — folder for reusable team/squad/XI CSV files
 
 ---
 
@@ -137,23 +159,42 @@ Kevin Patel         1.0      0    15   2   7.50    3   1  0     1      0
 
 ## Changelog / Recent Improvements
 
-- Added `teams_utils.py` for robust team and squad management.
-- Improved striker/non-striker swap logic at the end of overs.
-- Fixed bug: non-striker never appears as eligible to bat after a wicket.
-- Added clear messages for early innings or over endings (e.g., all out).
-- Robust handling for team loading, input, and batting order management.
-- Expanded prompts and error messages for better user experience.
-- Consistent display of captain/wicketkeeper roles in all name lists.
+- **Full modular refactor:** Logic split into `models.py`, `team_utils.py`, `input_handler.py`, `game_logic.py`, and `scorecard.py`
+- **Robust team manager:** `teams_utils.py` for team and squad management (main folder)
+- **Improved input validation:** All ball-by-ball and selection input is robust, clear, and error-resilient
+- **Edge case handling:** Striker/non-striker swaps, early over/innings ends, did-not-bat, etc.
+- **Legacy support:** Original monolithic script in `legacy/`
+
+---
+
+## Legacy Version
+
+- The original, all-in-one script (`legacy/scorecard_generator.py`) is included for reference and historical context.
+- **All new features and improvements are in the modular version.**
+- The legacy file is not maintained or recommended for use.
 
 ---
 
 ## To Improve / TODO
 
-- Add support for full 20-over innings and second innings with result calculation.
-- Export scorecard to file (txt/CSV/JSON).
-- Support for other formats (ODI, Test).
-- More summary statistics and user guidance.
-- Optional integration with external cricket data APIs.
+- Full 20-over support and automatic match result calculation
+- Fine tune the correct logic for legal deliveries and possibilities
+- Export scorecards to file (txt/CSV/JSON)
+- Support for ODI/Test match formats
+- More summary statistics and user guidance
+- Optional integration with external cricket data APIs
+- Unit/integration tests and CI setup
+
+---
+
+## Portfolio Note
+
+This project demonstrates:
+- **Refactoring from procedural to modular Python**
+- **Best practices in user input, data validation, and code organization**
+- **Growth as a developer — see both the monolithic and modern modular versions**
+
+Feel free to explore the [Python Portfolio](https://github.com/mama-cailleach/python-portfolio/) for more projects and evolution of coding style.
 
 ---
 
