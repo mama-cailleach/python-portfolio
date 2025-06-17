@@ -121,7 +121,7 @@ def input_ball(batters, bowler, over_num=None, ball_num=None, team=None):
     else:
         prompt_prefix = "Event (0-6, w=wicket, wd=wide, nb=no ball, b=bye, lb=leg bye): "
     print(f"Striker: {batters[0].name}, Non-striker: {batters[1].name}, Bowler: {bowler.name}")
-    event = input(prompt_prefix).strip()
+    event = input(prompt_prefix).strip().lower()
     runs, event_type, fielders = 0, "normal", []
     swapped = False
     if event in ['w', 'W']:
@@ -164,23 +164,95 @@ def input_ball(batters, bowler, over_num=None, ball_num=None, team=None):
             print("you can't do that try again.")
             return input_ball(batters, bowler, over_num, ball_num, team)
     elif event == "wd":
-        try:
-            runs = int(input("Runs on wide (default 1): ") or "1")
-            event_type = "wide"
-        except:
-            print("you can't do that try again.")
+        print("Wide! 1 penalty run awarded (extra).")
+        print("Please input if any extra runs or outcomes (0, bye, leg bye, run out):")
+        outcome = input("> ").strip().lower()
+        runs = 1
+        event_type = "wide"
+        fielders = []
+        swapped = False
+        if outcome in ["", "0"]:
+            return runs, event_type, fielders, swapped
+        elif outcome == "bye":
+            print("How many byes?")
+            bye_runs = int(input("> "))
+            runs += bye_runs
+            swapped = (bye_runs % 2 == 1)
+            return runs, "wide_bye", fielders, swapped
+        elif outcome in ["leg bye", "leg byes"]:
+            print("How many leg byes?")
+            lb_runs = int(input("> "))
+            runs += lb_runs
+            swapped = (lb_runs % 2 == 1)
+            return runs, "wide_leg_bye", fielders, swapped
+        elif outcome == "run out":
+            print("How many runs completed before run out?")
+            completed_runs = int(input("> "))
+            runs += completed_runs
+            swapped = (completed_runs % 2 == 1)
+            print("Which batter was run out? (striker/non-striker)")
+            out_batter = input("> ").strip().lower()
+            if out_batter == 'striker':
+                fielders = [batters[0].name]
+            elif out_batter == 'non-striker':
+                fielders = [batters[1].name]
+            else:
+                print("Invalid input.")
+                return input_ball(batters, bowler, over_num, ball_num, team)
+            return runs, "wide_run_out", fielders, swapped
+        else:
+            print("Invalid input, please try again.")
             return input_ball(batters, bowler, over_num, ball_num, team)
     elif event == "nb":
+        runs = 1
+        event_type = "no ball"
+        fielders = []
+        swapped = False
         print("No ball! 1 penalty run awarded (extra).")
         print("Please input if any extra runs or outcomes (0-6, bye, leg bye, run out):")
         outcome = input("> ").strip().lower()
-        return handle_no_ball_outcome(outcome, batters, bowler, team, over_num, ball_num)
+        if outcome in ["", "0"]:
+            return runs, event_type, fielders, swapped
+        elif outcome.isdigit() and int(outcome) in range(1, 7):
+            extra_runs = int(outcome)
+            runs += extra_runs
+            # Return correct event type for batter runs on no ball
+            return runs, "no ball_runs", fielders, (extra_runs % 2 == 1)
+        elif outcome == "bye":
+            print("How many byes?")
+            bye_runs = int(input("> "))
+            runs += bye_runs
+            swapped = (bye_runs % 2 == 1)
+            return runs, "no ball_bye", fielders, swapped
+        elif outcome in ["leg bye", "leg byes"]:
+            print("How many leg byes?")
+            lb_runs = int(input("> "))
+            runs += lb_runs
+            swapped = (lb_runs % 2 == 1)
+            return runs, "no ball_leg_bye", fielders, swapped
+        elif outcome == "run out":
+            print("How many runs completed before run out?")
+            completed_runs = int(input("> "))
+            runs += completed_runs
+            swapped = (completed_runs % 2 == 1)
+            print("Which batter was run out? (striker/non-striker)")
+            out_batter = input("> ").strip().lower()
+            if out_batter == 'striker':
+                fielders = [batters[0].name]
+            elif out_batter == 'non-striker':
+                fielders = [batters[1].name]
+            else:
+                print("Invalid input.")
+                return input_ball(batters, bowler, over_num, ball_num, team)
+            return runs, "no ball_run_out", fielders, swapped
+        else:
+            print("Invalid input, please try again.")
+            return input_ball(batters, bowler, over_num, ball_num, team)
     elif event == "b":
         try:
             runs = int(input("Byes: "))
             event_type = "bye"
-            swap = input("Did the batters swap ends? (y/n): ").strip().lower()
-            swapped = (swap == "y")
+            swapped = (runs % 2 == 1)
         except:
             print("you can't do that try again.")
             return input_ball(batters, bowler, over_num, ball_num, team)
@@ -188,8 +260,7 @@ def input_ball(batters, bowler, over_num=None, ball_num=None, team=None):
         try:
             runs = int(input("Leg byes: "))
             event_type = "leg bye"
-            swap = input("Did the batters swap ends? (y/n): ").strip().lower()
-            swapped = (swap == "y")
+            swapped = (runs % 2 == 1)
         except:
             print("you can't do that try again.")
             return input_ball(batters, bowler, over_num, ball_num, team)

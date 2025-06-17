@@ -20,9 +20,21 @@ def print_batting_scorecard(innings):
         else:
             did_not_bat.append(get_display_name(team, num))
     extras_total = sum(innings.extras.values())
-    print("{:<20}{:>25}{:>5}".format("Extras", '', extras_total))
+    # Build extras breakdown string
+    extras_parts = []
+    if innings.extras['byes']:
+        extras_parts.append(f"b {innings.extras['byes']}")
+    if innings.extras['leg byes']:
+        extras_parts.append(f"lb {innings.extras['leg byes']}")
+    if innings.extras['wides']:
+        extras_parts.append(f"w {innings.extras['wides']}")
+    if innings.extras['no balls']:
+        extras_parts.append(f"nb {innings.extras['no balls']}")
+    extras_str = ', '.join(extras_parts)
+    print("{:<20}{:<25}{:>5}".format("Extras", f"({extras_str})" if extras_str else '', extras_total))
     runs, wickets, overs, rr = innings.get_score()
-    balls = sum(1 for be in innings.balls if be.event not in ['wide', 'no ball'])
+    # Calculate balls for overs: only legal deliveries
+    balls = sum(1 for be in innings.balls if be.event in ['normal', 'bye', 'leg bye', 'wicket'])
     full_overs = balls // 6
     rem_balls = balls % 6
     overs_str = f"{full_overs}.{rem_balls} Ov" if rem_balls else f"{full_overs} Ov"

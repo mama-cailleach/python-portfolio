@@ -54,8 +54,10 @@ def process_ball_event(
         batter.batting['runs'] += runs
         batter.batting['balls'] += 1
         if runs == 4:
+            batter.batting['4s'] += 1  # FIX: increment batter's 4s
             bowler.bowling['4s'] += 1
         if runs == 6:
+            batter.batting['6s'] += 1  # FIX: increment batter's 6s
             bowler.bowling['6s'] += 1
         if runs == 0:
             bowler.bowling['dots'] += 1
@@ -84,8 +86,10 @@ def process_ball_event(
         bowler.bowling['runs'] += runs
         batter.batting['runs'] += bat_runs
         if bat_runs == 4:
+            batter.batting['4s'] += 1  # FIX: increment batter's 4s
             bowler.bowling['4s'] += 1
         if bat_runs == 6:
+            batter.batting['6s'] += 1  # FIX: increment batter's 6s
             bowler.bowling['6s'] += 1
         over_runs += runs
         if bat_runs % 2 == 1:

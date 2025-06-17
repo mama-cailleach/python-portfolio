@@ -72,10 +72,17 @@ class Innings:
         self.balls.append(ball_event)
 
     def get_score(self):
-        runs = sum(be.runs for be in self.balls if be.event not in ['wide', 'no ball'])
-        runs += self.extras['wides'] + self.extras['no balls'] + self.extras['byes'] + self.extras['leg byes']
+        # Sum batter runs: runs scored off the bat (normal, wicket)
+        batter_run_events = ['normal', 'wicket']
+        batter_runs = sum(be.runs for be in self.balls if be.event in batter_run_events)
+        # For no ball_runs, only add the bat runs (not penalty)
+        batter_runs += sum((be.runs - 1) for be in self.balls if be.event == 'no ball_runs')
+        # Add all extras: byes, leg byes, wides, no balls (penalty only)
+        extras_total = self.extras['wides'] + self.extras['byes'] + self.extras['leg byes'] + self.extras['no balls']
+        runs = batter_runs + extras_total
         wickets = len(self.fall_of_wickets)
-        balls = sum(1 for be in self.balls if be.event not in ['wide', 'no ball'])
+        # Only count balls for legal deliveries
+        balls = sum(1 for be in self.balls if be.event in ['normal', 'bye', 'leg bye', 'wicket'])
         overs = balls // BALLS_PER_OVER + (balls % BALLS_PER_OVER) / 10
         rr = runs / (balls / 6) if balls else 0
         return runs, wickets, overs, rr
