@@ -72,14 +72,22 @@ class Innings:
         self.balls.append(ball_event)
 
     def get_score(self):
-        # Sum batter runs: runs scored off the bat (normal, wicket)
-        batter_run_events = ['normal', 'wicket']
-        batter_runs = sum(be.runs for be in self.balls if be.event in batter_run_events)
-        # For no ball_runs, only add the bat runs (not penalty)
-        batter_runs += sum((be.runs - 1) for be in self.balls if be.event == 'no ball_runs')
-        # Add all extras: byes, leg byes, wides, no balls (penalty only)
-        extras_total = self.extras['wides'] + self.extras['byes'] + self.extras['leg byes'] + self.extras['no balls']
-        runs = batter_runs + extras_total
+        total_runs = 0
+        
+        # Get all extras from the extras dictionary
+        # This includes wides, no balls (penalty), byes, leg byes
+        total_runs = sum(self.extras.values())
+        
+        # Add runs scored by batters (off normal deliveries and wickets)
+        for player in self.batting_team.players.values():
+            total_runs += player.batting['runs']
+        
+        wickets = len(self.fall_of_wickets)
+        # Only count balls for legal deliveries
+        balls = sum(1 for be in self.balls if be.event in ['normal', 'bye', 'leg bye', 'wicket'])
+        overs = balls // BALLS_PER_OVER + (balls % BALLS_PER_OVER) / 10
+        rr = total_runs / (balls / 6) if balls else 0
+        return total_runs, wickets, overs, rr
         wickets = len(self.fall_of_wickets)
         # Only count balls for legal deliveries
         balls = sum(1 for be in self.balls if be.event in ['normal', 'bye', 'leg bye', 'wicket'])

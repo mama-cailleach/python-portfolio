@@ -9,7 +9,8 @@ def print_batting_scorecard(innings):
     for num in team.order:
         p = team.players[num]
         bat = p.batting
-        if bat['balls'] > 0 or bat['runs'] > 0 or bat['dismissal'] != 'not out':
+        # Show batter if they have batted (faced balls/scored/got out) OR if they are currently batting (p.batted is True)
+        if bat['balls'] > 0 or bat['runs'] > 0 or bat['dismissal'] != 'not out' or p.batted:
             player_name = get_display_name(team, num)
             dismissal = bat['dismissal']
             print("{:<20}{:<25}{:>5}{:>6}{:>4}{:>4}{:>7.2f}".format(
