@@ -49,7 +49,6 @@ def print_batting_scorecard(innings):
 
 def print_bowling_scorecard(innings):
     team = innings.bowling_team
-    print(f"Bowling: {team.name}")
     columns = ["Bowler", "Overs", "M", "Runs", "Wkts", "Econ", "Dots", "4s", "6s", "Wd", "NB"]
     print("{:<20}{:>6}{:>8}{:>6}{:>6}{:>7}{:>6}{:>4}{:>4}{:>7}{:>8}".format(*columns))
     for num, p in team.players.items():
@@ -60,7 +59,8 @@ def print_bowling_scorecard(innings):
         rem_balls = balls % 6
         overs = f"{full_overs}.{rem_balls}" if rem_balls else f"{full_overs}.0"
         maidens = p.bowling['maidens']
-        runs = p.bowling['runs']
+        # Calculate runs conceded (excluding byes/leg byes)
+        runs = p.bowling['runs']  # This will now only include runs off bat, wides, and no balls
         wkts = p.bowling['wickets']
         econ = (runs / (balls/6)) if balls else 0
         dots = p.bowling['dots']

@@ -2,6 +2,11 @@ from .team_utils import choose_team_xi
 from .game_logic import play_innings
 from .models import MAX_OVERS, MAX_BOWLER_OVERS
 
+### just to not forget this info
+# cd /workspaces/python-portfolio/python-courses/cisco-python-essentials-2/scorecard-generator
+# python -m scorecard_generator.main
+###
+
 def main():
     print("Cricket T20 Scorecard Creator/Analyzer\n")
     ready = input("Do you have your starting XIs ready? (y/n): ").strip().lower()

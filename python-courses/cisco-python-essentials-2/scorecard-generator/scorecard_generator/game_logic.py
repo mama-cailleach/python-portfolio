@@ -171,7 +171,8 @@ def process_ball_event(
         innings.extras['byes'] += runs
         batter.batting['balls'] += 1
         bowler.bowling['balls'] += 1
-        over_runs += runs
+        # Remove: bowler.bowling['runs'] += runs  # Byes don't count against bowler
+        over_runs += runs  # Keep this for innings total
         if swapped:
             current_batters.reverse()
         legal_balls += 1
@@ -180,7 +181,8 @@ def process_ball_event(
         innings.extras['leg byes'] += runs
         batter.batting['balls'] += 1
         bowler.bowling['balls'] += 1
-        over_runs += runs
+        # Remove: bowler.bowling['runs'] += runs  # Leg byes don't count against bowler
+        over_runs += runs  # Keep this for innings total
         if swapped:
             current_batters.reverse()
         legal_balls += 1
