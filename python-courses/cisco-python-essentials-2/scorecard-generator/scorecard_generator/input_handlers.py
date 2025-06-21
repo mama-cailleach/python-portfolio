@@ -1,8 +1,12 @@
 from .models import Player, Team
+import sys
 
 def safe_int(prompt, valid=None):
     while True:
         val = input(prompt)
+        if val.strip().lower() == "exit":
+            print("Exiting program.")
+            sys.exit(0)
         try:
             val_int = int(val)
             if valid and val_int not in valid:
@@ -15,6 +19,9 @@ def safe_int(prompt, valid=None):
 def safe_choice(prompt, options):
     while True:
         val = input(prompt)
+        if val.strip().lower() == "exit":
+            print("Exiting program.")
+            sys.exit(0)
         if val in options:
             return val
         print("you can't do that try again.")
@@ -150,6 +157,7 @@ def input_ball(batters, bowler, over_num=None, ball_num=None, team=None):
         elif wicket_type == "run out":
             print("How many runs completed before run out?")
             completed_runs = int(input("> "))
+            swapped = (completed_runs % 2 == 1)
             print("Which batter was run out? (striker/non-striker)")
             out_batter = input("> ").strip().lower()
             if out_batter == 'striker':
@@ -257,7 +265,7 @@ def input_ball(batters, bowler, over_num=None, ball_num=None, team=None):
                 return input_ball(batters, bowler, over_num, ball_num, team)
             fielder_num = int(input("Fielder shirt number: "))
             fielder = team.get_player(fielder_num).name if team and fielder_num in team.players else str(fielder_num)
-            return runs, "wide_run_out", [fielder, out_batter_idx, completed_runs], swapped
+            return runs, "no ball_run_out", [fielder, out_batter_idx, completed_runs], swapped
         else:
             print("Invalid input, please try again.")
             return input_ball(batters, bowler, over_num, ball_num, team)
