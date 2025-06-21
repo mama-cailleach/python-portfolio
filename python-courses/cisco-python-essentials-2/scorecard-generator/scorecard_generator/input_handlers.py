@@ -148,10 +148,22 @@ def input_ball(batters, bowler, over_num=None, ball_num=None, team=None):
             event_type = "wicket"
             fielders = ["lbw", bowler.name]
         elif wicket_type == "run out":
+            print("How many runs completed before run out?")
+            completed_runs = int(input("> "))
+            print("Which batter was run out? (striker/non-striker)")
+            out_batter = input("> ").strip().lower()
+            if out_batter == 'striker':
+                out_batter_idx = 0
+            elif out_batter == 'non-striker':
+                out_batter_idx = 1
+            else:
+                print("Invalid input.")
+                return input_ball(batters, bowler, over_num, ball_num, team)
             fielder_num = int(input("Fielder shirt number: "))
             fielder = team.get_player(fielder_num).name if team and fielder_num in team.players else str(fielder_num)
-            event_type = "wicket"
-            fielders = [fielder]
+            event_type = "run out"
+            fielders = [fielder, out_batter_idx, completed_runs]
+            runs = completed_runs
         elif wicket_type == "stumped":
             if team and getattr(team, 'wicketkeeper_number', None) is not None:
                 wicketkeeper = team.get_player(team.wicketkeeper_number).name
@@ -193,16 +205,15 @@ def input_ball(batters, bowler, over_num=None, ball_num=None, team=None):
             print("Which batter was run out? (striker/non-striker)")
             out_batter = input("> ").strip().lower()
             if out_batter == 'striker':
-                fielders = [batters[0].name]
+                out_batter_idx = 0
             elif out_batter == 'non-striker':
-                fielders = [batters[1].name]
+                out_batter_idx = 1
             else:
                 print("Invalid input.")
                 return input_ball(batters, bowler, over_num, ball_num, team)
-            return runs, "wide_run_out", fielders, swapped
-        else:
-            print("Invalid input, please try again.")
-            return input_ball(batters, bowler, over_num, ball_num, team)
+            fielder_num = int(input("Fielder shirt number: "))
+            fielder = team.get_player(fielder_num).name if team and fielder_num in team.players else str(fielder_num)
+            return runs, "wide_run_out", [fielder, out_batter_idx, completed_runs], swapped
     elif event == "nb":
         runs = 1
         event_type = "no ball"
@@ -238,13 +249,15 @@ def input_ball(batters, bowler, over_num=None, ball_num=None, team=None):
             print("Which batter was run out? (striker/non-striker)")
             out_batter = input("> ").strip().lower()
             if out_batter == 'striker':
-                fielders = [batters[0].name]
+                out_batter_idx = 0
             elif out_batter == 'non-striker':
-                fielders = [batters[1].name]
+                out_batter_idx = 1
             else:
                 print("Invalid input.")
                 return input_ball(batters, bowler, over_num, ball_num, team)
-            return runs, "no ball_run_out", fielders, swapped
+            fielder_num = int(input("Fielder shirt number: "))
+            fielder = team.get_player(fielder_num).name if team and fielder_num in team.players else str(fielder_num)
+            return runs, "wide_run_out", [fielder, out_batter_idx, completed_runs], swapped
         else:
             print("Invalid input, please try again.")
             return input_ball(batters, bowler, over_num, ball_num, team)

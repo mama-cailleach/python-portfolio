@@ -196,55 +196,68 @@ def process_ball_event(
         legal_balls += 1
         ball_number += 1
 
-    elif event_type in ["bye_run_out", "leg_bye_run_out", "wide_run_out"]:
-        if handle_run_out(batter, fielders[0]):
-            if handle_wicket_fall(out_batter_idx=0, out_batter=batter):
-                return wickets, over_runs, legal_balls, ball_number, current_batters, batters_yet, over_ended_early
-        if event_type == "bye_run_out" or event_type == "leg_bye_run_out":
-            batter.batting['balls'] += 1
-            bowler.bowling['balls'] += 1
-            legal_balls += 1
-            ball_number += 1
-        elif event_type == "wide_run_out":
-            innings.extras['wides'] += 1
-            bowler.bowling['wides'] += 1
-            bowler.bowling['runs'] += 1
+    elif event_type in ["run out", "bye_run_out", "leg_bye_run_out", "wide_run_out", "no ball_run_out"]:
+        fielder = fielders[0]
+        out_batter_idx = fielders[1]
+        completed_runs = fielders[2]
+        out_batter = current_batters[out_batter_idx]
+        handle_run_out(out_batter, fielder)
+        if handle_wicket_fall(out_batter_idx=out_batter_idx, out_batter=out_batter):
+            return wickets, over_runs, legal_balls, ball_number, current_batters, batters_yet, over_ended_early
+        out_batter.batting['balls'] += 1
+        bowler.bowling['balls'] += 1
+        over_runs += completed_runs
+        if swapped:
+            current_batters.reverse()
+        legal_balls += 1
+        ball_number += 1
 
     elif event_type == "wicket":
         batter.batting['balls'] += 1
         bowler.bowling['balls'] += 1
         bowler.bowling['wickets'] += 1
         bowler_surname = bowler.name.split()[-1]
-        if len(fielders) == 1 and isinstance(fielders[0], tuple):
-            fielder, _, wicket_type = fielders[0]
-            fielder_surname = fielder.split()[-1]
-            if wicket_type == "c&b":
-                batter.batting['dismissal'] = f"c & b {bowler_surname}"
-            elif wicket_type == "stumped":
-                batter.batting['dismissal'] = f"st {fielder_surname} b {bowler_surname}"
-            elif wicket_type == "caught":
-                batter.batting['dismissal'] = f"c {fielder_surname} b {bowler_surname}"
-            elif wicket_type == "lbw":
-                batter.batting['dismissal'] = f"lbw b {bowler_surname}"
-            elif wicket_type == "bowled":
+        dismissal_set = False
+
+        if len(fielders) == 1:
+            f = fielders[0]
+            # Caught & Bowled or Caught
+            if isinstance(f, tuple):
+                fielder, _, is_c_and_b = f
+                fielder_surname = fielder.split()[-1]
+                if is_c_and_b:
+                    batter.batting['dismissal'] = f"c & b {bowler_surname}"
+                else:
+                    batter.batting['dismissal'] = f"c {fielder_surname} b {bowler_surname}"
+                dismissal_set = True
+            # Bowled
+            elif isinstance(f, str) and f == bowler.name:
                 batter.batting['dismissal'] = f"b {bowler_surname}"
-                print("hi")#delete
-            else:
-                print(f"Warning: Unhandled dismissal mode: {wicket_type}")
+                dismissal_set = True
+            # Run out
+            elif isinstance(f, str):
+                fielder_surname = f.split()[-1]
+                batter.batting['dismissal'] = f"run out ({fielder_surname})"
+                dismissal_set = True
+
+        # LBW
+        elif len(fielders) == 2 and fielders[0] == "lbw":
+            batter.batting['dismissal'] = f"lbw b {bowler_surname}"
+            dismissal_set = True
+
+        # Stumped
+        elif len(fielders) == 2:
+            wicketkeeper, _ = fielders
+            keeper_surname = wicketkeeper.split()[-1]
+            batter.batting['dismissal'] = f"st †{keeper_surname} b {bowler_surname}"
+            dismissal_set = True
+
+        # Fallback
+        if not dismissal_set:
+            batter.batting['dismissal'] = f"b {bowler_surname}"
+
         if handle_wicket_fall(out_batter_idx=0, out_batter=batter):
             return wickets, over_runs, legal_balls, ball_number, current_batters, batters_yet, over_ended_early
-        legal_balls += 1
-        ball_number += 1
-
-    elif event_type == "run out":
-        if handle_run_out(batter, fielders[0]):
-            if handle_wicket_fall(out_batter_idx=0, out_batter=batter):
-                return wickets, over_runs, legal_balls, ball_number, current_batters, batters_yet, over_ended_early
-        batter.batting['balls'] += 1
-        bowler.bowling['balls'] += 1
-        over_runs += runs
-        if swapped:
-            current_batters.reverse()
         legal_balls += 1
         ball_number += 1
 
