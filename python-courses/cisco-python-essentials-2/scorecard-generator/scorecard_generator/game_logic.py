@@ -49,25 +49,35 @@ def process_ball_event(
     legal_balls, ball_number, batters_yet
 ):
     over_ended_early = False
+    # Add this near the top of process_ball_event, after its definition:
+    print(f"[DEBUG] process_ball_event: batter={batter.name}, id={id(batter)}")
+    print(f"[DEBUG] ids of all batting_team.players:")
+    for num, player in batting_team.players.items():
+        print(f"  num={num}, name={player.name}, id={id(player)}")
+    print(f"[DEBUG] ids of current_batters: {[id(cb) for cb in current_batters]}")#delete
+    
 
-    def handle_wicket_fall(out_batter_idx=0):
-        nonlocal wickets, current_batters, over_ended_early
+    def handle_wicket_fall(out_batter_idx=0, out_batter=None):
+        nonlocal wickets, current_batters, over_ended_early, batters_yet
         runs_total, _, _, _ = innings.get_score()
-        print(f"\nWICKET! Score: {runs_total}-{wickets+1} | {batter.name} {batter.batting['runs']}({batter.batting['balls']})")
+        print(f"Set dismissal for {out_batter.name}: {out_batter.batting['dismissal']}")
+        print(f"\nWICKET! Score: {runs_total}-{wickets+1} | {out_batter.name} {out_batter.batting['runs']}({out_batter.batting['balls']})")
         wickets += 1
-        innings.fall_of_wickets.append((runs_total, batter.name, bowler.name, over + ball_number / 10))
+        innings.fall_of_wickets.append((runs_total, out_batter.name, bowler.name, over + ball_number / 10))
         
-        # Handle all out or innings end
         if wickets == 10:
             current_batters[0] = None
             current_batters[1] = None
             over_ended_early = True
             return True
-            
+
         # Replace out batter with new one if available
         non_out_idx = 1 - out_batter_idx
         survivor = current_batters[non_out_idx]
-        batters_batted = [b.number for b in batting_team.players.values() if b.batting['balls'] > 0 or b.batting['dismissal'] != 'not out']
+        batters_batted = [
+            b.number for b in batting_team.players.values()
+            if b.batting['balls'] > 0 or b.batting['dismissal'] != 'not out'
+        ]
         batters_yet = [
             num for num in batting_team.order
             if num not in batters_batted and (survivor is None or num != survivor.number)
@@ -93,7 +103,7 @@ def process_ball_event(
             over_ended_early = True
             return True
         return False
-        
+
     # Normal scoring ball
     if event_type == "normal":
         batter.batting['runs'] += runs
@@ -113,7 +123,7 @@ def process_ball_event(
             current_batters.reverse()
         legal_balls += 1
         ball_number += 1
-        
+
     # Wide ball variants
     elif event_type in ["wide", "wide_boundary", "wide_bye", "wide_leg_bye"]:
         if event_type == "wide":
@@ -137,13 +147,13 @@ def process_ball_event(
         over_runs += runs
         if swapped:
             current_batters.reverse()
-            
+
     # No ball variants
     elif event_type == "no ball":
         innings.extras['no balls'] += 1
         bowler.bowling['noballs'] += 1
         bowler.bowling['runs'] += 1
-    
+
     elif event_type == "no ball_runs":
         penalty = 1
         bat_runs = runs - penalty
@@ -160,7 +170,7 @@ def process_ball_event(
         over_runs += runs
         if bat_runs % 2 == 1:
             current_batters.reverse()
-            
+
     elif event_type == "no ball_bye":
         penalty = 1
         bye_runs = runs - penalty
@@ -171,7 +181,7 @@ def process_ball_event(
         over_runs += runs
         if swapped:
             current_batters.reverse()
-            
+
     elif event_type == "bye":
         innings.extras['byes'] += runs
         batter.batting['balls'] += 1
@@ -181,7 +191,7 @@ def process_ball_event(
             current_batters.reverse()
         legal_balls += 1
         ball_number += 1
-        
+
     elif event_type == "leg bye":
         innings.extras['leg byes'] += runs
         batter.batting['balls'] += 1
@@ -191,7 +201,7 @@ def process_ball_event(
             current_batters.reverse()
         legal_balls += 1
         ball_number += 1
-        
+
     # Dismissal methods
     elif event_type == "bowled":
         batter.batting['balls'] += 1
@@ -199,32 +209,34 @@ def process_ball_event(
         bowler.bowling['wickets'] += 1
         bowler_surname = bowler.name.split()[-1]
         batter.batting['dismissal'] = f"b {bowler_surname}"
-        if handle_wicket_fall():
+        print(f"[DEBUG] Set dismissal for {batter.name} (id={id(batter)}): {batter.batting['dismissal']}") #delete
+        if handle_wicket_fall(out_batter_idx=0, out_batter=batter):
             return wickets, over_runs, legal_balls, ball_number, current_batters, batters_yet, over_ended_early
         legal_balls += 1
         ball_number += 1
-        
+
     elif event_type == "lbw":
         batter.batting['balls'] += 1
         bowler.bowling['balls'] += 1
         bowler.bowling['wickets'] += 1
         bowler_surname = bowler.name.split()[-1]
         batter.batting['dismissal'] = f"lbw b {bowler_surname}"
+        if handle_wicket_fall(out_batter_idx=0, out_batter=batter):
+            return wickets, over_runs, legal_balls, ball_number, current_batters, batters_yet, over_ended_early
         legal_balls += 1
         ball_number += 1
-        if handle_wicket_fall():
-            return wickets, over_runs, legal_balls, ball_number, current_batters, batters_yet, over_ended_early
-        
+
     elif event_type == "hit wicket":
         batter.batting['balls'] += 1
         bowler.bowling['balls'] += 1
         bowler.bowling['wickets'] += 1
         bowler_surname = bowler.name.split()[-1]
         batter.batting['dismissal'] = f"hit wicket b {bowler_surname}"
+        if handle_wicket_fall(out_batter_idx=0, out_batter=batter):
+            return wickets, over_runs, legal_balls, ball_number, current_batters, batters_yet, over_ended_early
         legal_balls += 1
         ball_number += 1
-        if handle_wicket_fall():
-            return wickets, over_runs, legal_balls, ball_number, current_batters, batters_yet, over_ended_early
+
     elif event_type == "stumped":
         batter.batting['balls'] += 1
         bowler.bowling['balls'] += 1
@@ -232,30 +244,17 @@ def process_ball_event(
         keeper_name = fielders[0][0].split()[-1] if isinstance(fielders[0], tuple) else fielders[0].split()[-1]
         bowler_surname = bowler.name.split()[-1]
         batter.batting['dismissal'] = f"st †{keeper_name} b {bowler_surname}"
+        if handle_wicket_fall(out_batter_idx=0, out_batter=batter):
+            return wickets, over_runs, legal_balls, ball_number, current_batters, batters_yet, over_ended_early
         legal_balls += 1
         ball_number += 1
-        if handle_wicket_fall():
-            return wickets, over_runs, legal_balls, ball_number, current_batters, batters_yet, over_ended_early
-            legal_balls += 1
-        ball_number += 1
-        if handle_wicket_fall():
-            return wickets, over_runs, legal_balls, ball_number, current_batters, batters_yet, over_ended_early
-        
+
     elif event_type in ["bye_run_out", "leg_bye_run_out", "wide_run_out"]:
-        # Set dismissal and increment wicket count first
         if handle_run_out(batter, fielders[0]):
             wickets += 1
-            # Handle the wicket fall before updating other stats
-            if handle_wicket_fall():
+            if handle_wicket_fall(out_batter_idx=0, out_batter=batter):
                 return wickets, over_runs, legal_balls, ball_number, current_batters, batters_yet, over_ended_early
-    
-        # Then handle the extras part
-        if event_type == "bye_run_out":
-            batter.batting['balls'] += 1
-            bowler.bowling['balls'] += 1
-            legal_balls += 1
-            ball_number += 1
-        elif event_type == "leg_bye_run_out":
+        if event_type == "bye_run_out" or event_type == "leg_bye_run_out":
             batter.batting['balls'] += 1
             bowler.bowling['balls'] += 1
             legal_balls += 1
@@ -264,43 +263,37 @@ def process_ball_event(
             innings.extras['wides'] += 1
             bowler.bowling['wides'] += 1
             bowler.bowling['runs'] += 1
-        
+
     elif event_type == "wicket":
         batter.batting['balls'] += 1
         bowler.bowling['balls'] += 1
         bowler.bowling['wickets'] += 1
         bowler_surname = bowler.name.split()[-1]
-        
-        # Get fielder information and mode of dismissal
         if len(fielders) == 1 and isinstance(fielders[0], tuple):
             fielder, _, mode = fielders[0]
             fielder_surname = fielder.split()[-1]
-            if mode == "c&b":  # For caught and bowled
+            if mode == "c&b":
                 batter.batting['dismissal'] = f"c & b {bowler_surname}"
             elif mode == "stumped":
                 batter.batting['dismissal'] = f"st {fielder_surname} b {bowler_surname}"
-            elif mode == "caught":  # For regular caught
+            elif mode == "caught":
                 batter.batting['dismissal'] = f"c {fielder_surname} b {bowler_surname}"
-            elif mode == "lbw":  # For LBW
+            elif mode == "lbw":
                 batter.batting['dismissal'] = f"lbw b {bowler_surname}"
-            elif mode == "bowled":  # For regular bowled
+            elif mode == "bowled":
                 batter.batting['dismissal'] = f"b {bowler_surname}"
             else:
                 print(f"Warning: Unhandled dismissal mode: {mode}")
-            
+        if handle_wicket_fall(out_batter_idx=0, out_batter=batter):
+            return wickets, over_runs, legal_balls, ball_number, current_batters, batters_yet, over_ended_early
         legal_balls += 1
         ball_number += 1
-        if handle_wicket_fall():
-            return wickets, over_runs, legal_balls, ball_number, current_batters, batters_yet, over_ended_early
-            
+
     elif event_type == "run out":
-        # Set dismissal and increment wicket count first
         if handle_run_out(batter, fielders[0]):
             wickets += 1
-            # Handle the wicket fall before updating other stats
-            if handle_wicket_fall():
+            if handle_wicket_fall(out_batter_idx=0, out_batter=batter):
                 return wickets, over_runs, legal_balls, ball_number, current_batters, batters_yet, over_ended_early
-        # Then update the rest of the stats
         batter.batting['balls'] += 1
         bowler.bowling['balls'] += 1
         over_runs += runs
@@ -370,11 +363,13 @@ def play_innings(batting_team, bowling_team, max_overs, max_bowler_overs):
         over += 1
         if over > 0 and current_batters[0] and current_batters[1]:
             current_batters.reverse()
+    print("[DEBUG] Final dismissals:") #delete
+    for p in batting_team.players.values(): #delete
+        print(f"{p.name} dismissal: {p.batting['dismissal']} id={id(p)}") #delete 
     print_batting_scorecard(innings)
     print_bowling_scorecard(innings)
     return innings
 
-# First, modify the handle_run_out helper function
 def handle_run_out(batter, fielder_info):
     """Helper function to consistently handle run out dismissals"""
     fielder_name = fielder_info[0] if isinstance(fielder_info, tuple) else fielder_info
