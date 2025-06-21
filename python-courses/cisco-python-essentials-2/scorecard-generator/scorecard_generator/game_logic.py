@@ -49,12 +49,6 @@ def process_ball_event(
     legal_balls, ball_number, batters_yet
 ):
     over_ended_early = False
-    # Add this near the top of process_ball_event, after its definition:
-    print(f"[DEBUG] process_ball_event: batter={batter.name}, id={id(batter)}")
-    print(f"[DEBUG] ids of all batting_team.players:")
-    for num, player in batting_team.players.items():
-        print(f"  num={num}, name={player.name}, id={id(player)}")
-    print(f"[DEBUG] ids of current_batters: {[id(cb) for cb in current_batters]}")#delete
     
 
     def handle_wicket_fall(out_batter_idx=0, out_batter=None):
@@ -209,7 +203,6 @@ def process_ball_event(
         bowler.bowling['wickets'] += 1
         bowler_surname = bowler.name.split()[-1]
         batter.batting['dismissal'] = f"b {bowler_surname}"
-        print(f"[DEBUG] Set dismissal for {batter.name} (id={id(batter)}): {batter.batting['dismissal']}") #delete
         if handle_wicket_fall(out_batter_idx=0, out_batter=batter):
             return wickets, over_runs, legal_balls, ball_number, current_batters, batters_yet, over_ended_early
         legal_balls += 1
@@ -363,9 +356,6 @@ def play_innings(batting_team, bowling_team, max_overs, max_bowler_overs):
         over += 1
         if over > 0 and current_batters[0] and current_batters[1]:
             current_batters.reverse()
-    print("[DEBUG] Final dismissals:") #delete
-    for p in batting_team.players.values(): #delete
-        print(f"{p.name} dismissal: {p.batting['dismissal']} id={id(p)}") #delete 
     print_batting_scorecard(innings)
     print_bowling_scorecard(innings)
     return innings
