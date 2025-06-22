@@ -17,8 +17,10 @@ See each folder for a README and more details!
 - **critical-hiss/**  
   D&D-themed Python experiments. At the moment: a simple random character generator.
 
-- **truco-2000/**
-  CLI truco card game with ASCII art. Only in PTBR at the moment
+- **truco-2000/**  
+  CLI truco card game with ASCII art. Only in PTBR for now.
+
+  
 
 ## General Notes
 
