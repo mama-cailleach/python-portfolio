@@ -22,18 +22,30 @@ Learn more about the course [here](https://www.netacad.com/courses/python-essent
 - Real-world Problem Solving
 
 ---
-
 ## Major Project: Scorecard Generator (In Development)
 
-### Scorecard Generator
-An interactive CLI tool to enter teams, ball-by-ball T20 match data, and generate a professional cricket scorecard (batting, bowling, extras, fall of wickets).  
-**Status:** _Still in development – actively being improved with new features, error handling, and more!_
+### Cricket T20 Scorecard Generator
+A complete, modular Python application for creating and analyzing detailed cricket T20 scorecards.
+**Status:** _Complete for portfolio purposes, future development continuing in a dedicated repository_
 
-- Enter teams (11 players each), select openers and bowlers
-- Ball-by-ball T20 input and rules enforcement (overs, wickets, bowler rest, etc.)
-- Professional scorecard output (batting, bowling, extras, did not bat, fall of wickets)
-- Robust user input validation and error handling
-- See [`scorecard-generator/`](./scorecard-generator/) for code and details
+- **Modular, professional Python codebase** split into dedicated modules:
+  - Data models, team management, input handling, game logic, scorecard formatting
+  - Package structure with proper setup.py configuration
+- **Interactive team/squad management:**
+  - Create/edit teams and squads, enforce unique shirt numbers
+  - Assign captain and wicketkeeper roles, saved in CSV format
+  - Select and save starting XIs for matches
+- **Comprehensive match play experience:**
+  - Ball-by-ball T20 input with robust validation
+  - All cricket rules enforced (overs, wickets, bowler rest, etc.)
+  - Professional scorecards with proper cricket notation
+  - Basic match simulation functionality for testing
+- **Demonstrates developer growth:**
+  - Both legacy monolithic script and modern refactored version included
+  - Shows evolution of coding practices and organization
+  - Includes proper documentation and usage examples
+
+See [`python-courses/cisco-python-essentials-2/scorecard-generator/`](./python-courses/cisco-python-essentials-2/scorecard-generator/) for full code and detailed README
 
 ---
 
