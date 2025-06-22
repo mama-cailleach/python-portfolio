@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Pyodide Test - Interactive Name Program</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm/css/xterm.css" />
+  <style>
+    html, body { height: 100%; margin: 0; }
+    #terminal { width: 100vw; height: 100vh; background: #222; }
+    .xterm { font-size: 16px; }
+  </style>
+</head>
+<body>
+  <div id="terminal"></div>
+  <script src="https://cdn.jsdelivr.net/npm/xterm/lib/xterm.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
+  <script>
+    const term = new Terminal({cursorBlink: true, theme: {background: "#222"}});
+    term.open(document.getElementById('terminal'));
+    term.focus();
+
+    let inputResolve = null;
+    let currentLine = "";
+
+    // Async input bridge for Python
+    async function js_input(prompt) {
+      term.write(prompt);
+      return await new Promise(resolve => {
+        inputResolve = resolve;
+      });
+    }
+
+    // Terminal input handling
+    term.onData(e => {
+      if (inputResolve) {
+        if (e === '\r') { // Enter
+          term.write('\r\n');
+          inputResolve(currentLine);
+          inputResolve = null;
+          currentLine = "";
+        } else if (e === '\u007f') { // Backspace
+          if (currentLine.length > 0) {
+            term.write('\b \b');
+            currentLine = currentLine.slice(0, -1);
+          }
+        } else {
+          term.write(e);
+          currentLine += e;
+        }
+      }
+    });
+
+    term.write("Initializing Python...\r\n");
+
+    async function main() {
+      let pyodide = await loadPyodide();
+      term.write("Python ready!\r\n\r\n");
+
+      pyodide.setStdout({batched: (data) => term.write(data.replace(/\n/g, "\r\n"))});
+      pyodide.setStderr({batched: (data) => term.write(data.replace(/\n/g, "\r\n"))});
+
+      // Register js_input as a Pyodide global function
+      pyodide.globals.set("js_input", js_input);
+
+      // Async Python code for the interactive prompt
+      const pythonCode = `
+import asyncio
+
+async def main():
+    print("Welcome to the test!\n")
+    name = await js_input("What is your name? ")
+    print(f"Hello, {name}.\n")
+    print(f"I guess it works. See you later, {name}.")
+
+await main()
+`;
+
+      try {
+        await pyodide.runPythonAsync(pythonCode);
+      } catch (e) {
+        term.write("\\r\\n[Python error]: " + e + "\\r\\n");
+      }
+
+      term.write("\r\n[Python script ended]\r\n");
+    }
+
+    main();
+  </script>
+</body>
+</html>
