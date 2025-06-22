@@ -67,10 +67,11 @@
 import asyncio
 
 async def main():
-    print("Welcome to the test!\n")
+    print("Welcome to the test! ")
     name = await js_input("What is your name? ")
-    print(f"Hello, {name}.\n")
-    print(f"I guess it works. See you later, {name}.")
+    print(f"Hello, {name}. ")
+    card = await js_input("What are those 3 numbers in the back of your bank card? ")
+    print(f"Nice, thanks so much! See you later, {name}-gator.")
 
 await main()
 `;
