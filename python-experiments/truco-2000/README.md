@@ -2,7 +2,7 @@
 
 ## Introduction
 
-**Truco 2000** is a command-line implementation of the popular Brazilian card game "Truco" developed by mama. This game showcases Python programming skills with a focus on object-oriented design, game logic implementation, and command-line user interface development.
+**Truco 2000** is a command-line implementation of the popular Brazilian card game "Truco" developed by mama. This game showcases Python programming skills with a focus on object-oriented design, game logic implementation, and command-line user interface development. At moment only available in Brazilian Portuguese.
 
 ---
 
@@ -92,10 +92,9 @@ This is an active project with several planned enhancements:
 - Support for "Seis" (6 points), "Nove" (9 points), and "Doze" (12 points) calls
 - Ability for AI to initiate truco calls
 
-### 5. Multiplayer Options
+### 5. Translation
 
-- Local multiplayer mode
-- Network play possibility
+- Translation to English
 
 ---
 
