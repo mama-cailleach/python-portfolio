@@ -53,19 +53,19 @@ def main():
 
     print(f"\nFirst Innings: {batting_first.name} Batting")
     innings1 = play_innings(batting_first, bowling_first, MAX_OVERS, MAX_BOWLER_OVERS)
+    score1, wickets1, overs1, rr1 = innings1.get_score()
+    target = score1 + 1
 
-    print(f"\nSecond Innings: {bowling_first.name} Batting")
-    innings2 = play_innings(bowling_first, batting_first, MAX_OVERS, MAX_BOWLER_OVERS)
+    print(f"\nSecond Innings: {bowling_first.name} Batting (Target: {target})")
+    innings2 = play_innings(bowling_first, batting_first, MAX_OVERS, MAX_BOWLER_OVERS, target=target)
 
     # You may wish to add a basic winner logic here
     score1, wickets1, overs1, rr1 = innings1.get_score()
     score2, wickets2, overs2, rr2 = innings2.get_score()
-    print("\nRESULT:")
-    if score1 > score2:
-        print(f"{batting_first.name} win by {score1 - score2} runs!")
-    elif score2 > score1:
-        wickets_left = 10 - wickets2
-        print(f"{bowling_first.name} win by {wickets_left} wicket(s)!")
+    if score2 >= target:
+        print(f"{bowling_first.name} win by {10 - wickets2} wicket(s)!")
+    elif score2 < target - 1:
+        print(f"{batting_first.name} win by {target - 1 - score2} runs!")
     else:
         print("Match tied!")
 

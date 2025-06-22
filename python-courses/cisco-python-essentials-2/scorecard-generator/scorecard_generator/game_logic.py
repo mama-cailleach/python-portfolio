@@ -263,7 +263,7 @@ def process_ball_event(
 
     return wickets, over_runs, legal_balls, ball_number, current_batters, batters_yet, over_ended_early
 
-def play_innings(batting_team, bowling_team, max_overs, max_bowler_overs):
+def play_innings(batting_team, bowling_team, max_overs, max_bowler_overs, target=None):
     innings = Innings(batting_team, bowling_team)
     print(f"Players available to open the batting:")
     for idx, num in enumerate(batting_team.order, 1):
@@ -309,10 +309,16 @@ def play_innings(batting_team, bowling_team, max_overs, max_bowler_overs):
                 current_batters, wickets, over, ball_num, batting_team, over_runs,
                 legal_balls, ball_num, batters_yet
             )
+            score, _, _, _ = innings.get_score()
+            if target is not None and score >= target:
+                print(f"\nTarget reached! {batting_team.name} win by {10 - wickets} wicket(s)!")
+                over_ended_early = True
+                break
             if over_ended_early:
                 break
         if over_ended_early:
             print("OVER ENDED EARLY (all out, no batters, or innings ended).")
+            break
         else:
             print("OVER FINISHED.")
         bowler_overs[bowler_num].append(over)
