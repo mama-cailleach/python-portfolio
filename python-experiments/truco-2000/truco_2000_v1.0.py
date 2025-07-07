@@ -364,10 +364,12 @@ class TrucoGame:
 
                 if truco_result[1] == "player_ran":
                     player_ran_from_truco = True
+                    truco_ladrao = False # Reset truco_ladrao since player ran
                     vencedor = "Oponente"  # Override the winner
                     break  # End the hand immediately
                 elif truco_result[1] == "opponent_ran":
                     opponent_ran_from_truco = True
+                    truco_ladrao = False  # Reset truco_ladrao since opponent ran
                     vencedor = "Jogador"  # Override the winner
                     break  # End the hand immediately
             else:
