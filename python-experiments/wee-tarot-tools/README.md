@@ -1,39 +1,64 @@
-# Lua Script – Text-to-Lua Dictionary Automation
+# Wee Tarot Tools
 
-This folder contains helper scripts related to Lua scripting for game development workflows.
+This directory contains helper scripts and experimental tools used for **asset generation** and **data automation** for my Playdate game, **Wee Tarot**.
 
-## Overview
-
-The scripts in this folder demonstrate how to automate the conversion of structured text data (typically exported or organized from Excel) into Lua dictionary (table) format. These scripts showcase the structure and base of how I used Python to transform CSV files into Lua-ready scripts for my game Wee Tarto.
-
-> **Note:**  
-> The files here are not the full production files used in the game. They were adapted and changed during testing to illustrate the workflow and underlying approach. They are provided as reference for structure and automation methods.
-
-### Key Features
-
-- **Excel/Text to Lua Table:**  
-  Converts structured text files (e.g., CSV or tab-separated values from Excel) into properly formatted Lua dictionary scripts.
-- **Game-Ready Output:**  
-  Ensures output is ready to be included as a Lua module or data file for use in your game code.
-- **Modular Structure:**  
-  Scripts are organized to facilitate easy adaptation for different data formats and game requirements.
-
-## How to Use
-
-1. Prepare your text file (CSV, TSV, or similar) with the data you want to convert.
-2. Run the appropriate Python script in this folder, specifying your input file.
-3. The script will output a `.lua` file containing the equivalent Lua dictionary/table.
-4. Import this generated file into your Lua project as needed.
-
-> **Tip:**  
-> Adjust the script as necessary to match your specific text file formatting and the structure required by your game.
-
-## Example Use Case
-
-- Quickly convert dialogue, localization, or configuration data from Excel sheets into Lua tables for use in games.
-- Use as a template for building your own automation workflows for data integration in Lua projects.
+It is a development playground for visual prototyping, spritesheet creation, and automating the conversion of card data into Lua tables, so I can quickly test, tweak, and integrate new tarot deck content and shuffle animations.
 
 ---
 
-*Created by [mama-cailleach](https://github.com/mama-cailleach) to streamline data integration for game projects.  
-Wee Tarot repository link coming soon.*
+## Contents
+
+### 1. **shuffleAnimation/**
+> Python scripts for visual prototyping and asset generation of tarot card shuffle animations.
+
+- **Purpose:**  
+  Test and tweak shuffle effects, export animated `.gif` previews, and generate `.png` spritesheets for use in the game.
+- **Highlights:**  
+  - Circular shuffling, hand shuffling, card scaling, fan spreads, and explosive finales.
+  - All scripts are iterative and experimental—expect hardcoded parameters and image filenames.
+- **See:** [`shuffleAnimation/README.md`](./shuffleAnimation/README.md) for a breakdown of each script and usage instructions.
+
+### 2. **generate_card_data/**
+> Python script for automating the conversion of structured tarot card data (from CSV/Excel) into Lua tables.
+
+- **Purpose:**  
+  Streamline the process of turning Excel/CSV card descriptions, keywords, and correspondences into Lua dictionaries ready for import in Wee Tarot.
+- **Highlights:**  
+  - Parses card data from CSV files
+  - Outputs Lua script files (tables) for direct use in Playdate/Lua projects
+  - Easily adaptable for other card sets or formats
+- **See:** [`generate_card_data/README.md`](./generate_card_data/README.md) for step-by-step instructions and details.
+
+---
+
+## How to Use
+
+1. **Install Dependencies**
+   - Most scripts require:
+     - [Pillow](https://python-pillow.org/) (`pip install pillow`)
+     - [numpy](https://numpy.org/) (`pip install numpy`)
+     - [imageio](https://imageio.github.io/) (`pip install imageio`)
+   - For data scripts, standard Python CSV handling (no extra packages needed).
+
+2. **Prepare Assets**
+   - For **shuffleAnimation**: Place card images (e.g., `Card01.PNG`, ...) in the script directory.
+   - For **generate_card_data**: Prepare your CSV file with the required columns (see subdirectory README).
+
+3. **Run Scripts**
+   - Each script is independent; see the subdirectory README for usage and details.
+
+4. **View Results**
+   - Preview `.gif` animations, use `.png` spritesheets in your game, and import generated Lua table files.
+
+---
+
+## Why These Tools?
+
+- Rapid prototyping for game feel and tarot deck visuals
+- Quick conversion of design data into code-ready formats
+- Streamlined asset creation for Playdate game development
+- All code is **experimental** and subject to change—meant for creative iteration!
+
+---
+
+Made with ♥ by [mama-cailleach](https://github.com/mama-cailleach) for Wee Tarot.
