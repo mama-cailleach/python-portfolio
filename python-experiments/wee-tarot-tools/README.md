@@ -57,7 +57,7 @@ It is a development playground for visual prototyping, spritesheet creation, and
 - Rapid prototyping for game feel and tarot deck visuals
 - Quick conversion of design data into code-ready formats
 - Streamlined asset creation for Playdate game development
-- All code is **experimental** and subject to change—meant for creative iteration!
+- All code is **experimental** and subject to change, meant for creative iteration!
 
 ---
 
