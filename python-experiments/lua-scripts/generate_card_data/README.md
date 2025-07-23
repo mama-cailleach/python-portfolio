@@ -4,71 +4,55 @@ This folder contains helper scripts related to Lua scripting for game developmen
 
 ## Overview
 
-The scripts in this folder demonstrate how to automate the conversion of structured text data (typically exported or organized from Excel) into Lua dictionary (table) format. These scripts showcase the structure and base of how I used Python to transform CSV files into Lua-ready scripts for my game Wee Tarto.
+The main script in this folder, `generate_card_data.py`, demonstrates how to automate the conversion of structured card data from a CSV file (such as one exported from Excel) into a Lua dictionary (table) format. This workflow showcases the structure and base of how Python was used to transform CSV files into Lua-ready scripts for my game Wee Tarto.
 
 > **Note:**  
 > The files here are not the full production files used in the game. They were adapted and changed during testing to illustrate the workflow and underlying approach. They are provided as reference for structure and automation methods.
 
-### Key Features
+## Directory Structure
 
-- **Excel/Text to Lua Table:**  
-  Converts structured text files (e.g., CSV or tab-separated values from Excel) into properly formatted Lua dictionary scripts.
-- **Game-Ready Output:**  
-  Ensures output is ready to be included as a Lua module or data file for use in your game code.
-- **Modular Structure:**  
-  Scripts are organized to facilitate easy adaptation for different data formats and game requirements.
+```
+python-experiments/lua-scripts/generate_card_data/
+├── README.md
+├── generate_card_data.py
+├── pentacles_data.csv
+├── export/
+│   └── cardDescriptionsPentacles.lua
+```
 
-## How to Use
+## How It Works
 
-1. Prepare your text file (CSV, TSV, or similar) with the data you want to convert.
-2. Run the appropriate Python script in this folder, specifying your input file.
-3. The script will output a `.lua` file containing the equivalent Lua dictionary/table.
-4. Import this generated file into your Lua project as needed.
+- **Input:**  
+  The script expects a CSV file (e.g., `pentacles_data.csv`) containing card data. Each row should include the following columns:
+  - `Card Name`
+  - `Upright Fortune`
+  - `Reversed Fortune`
+  - `Upright Keywords`
+  - `Reversed Keywords`
+  - `Correspondence`
 
-> **Tip:**  
-> Adjust the script as necessary to match your specific text file formatting and the structure required by your game.
+- **Transformation:**  
+  The script parses each row, handling multiple lines and keywords (split by delimiters like `|` and `;`). It builds a structured Python dictionary for each card, then generates a Lua table string.
 
-## Example Use Case
-
-- Quickly convert dialogue, localization, or configuration data from Excel sheets into Lua tables for use in games.
-- Use as a template for building your own automation workflows for data integration in Lua projects.
-
----
-
-*Created by [mama-cailleach](https://github.com/mama-cailleach) to streamline data integration for game projects.  
-Wee Tarto repository link coming soon.*# Lua Script – Text-to-Lua Dictionary Automation
-
-This folder contains helper scripts related to Lua scripting for game development workflows.
-
-## Overview
-
-The scripts in this folder demonstrate how to automate the conversion of structured text data (typically exported or organized from Excel) into Lua dictionary (table) format. These scripts showcase the structure and base of how I used Python to transform CSV files into Lua-ready scripts for my game Wee Tarto.
-
-> **Note:**  
-> The files here are not the full production files used in the game. They were adapted and changed during testing to illustrate the workflow and underlying approach. They are provided as reference for structure and automation methods.
-
-### Key Features
-
-- **Excel/Text to Lua Table:**  
-  Converts structured text files (e.g., CSV or tab-separated values from Excel) into properly formatted Lua dictionary scripts.
-- **Game-Ready Output:**  
-  Ensures output is ready to be included as a Lua module or data file for use in your game code.
-- **Modular Structure:**  
-  Scripts are organized to facilitate easy adaptation for different data formats and game requirements.
+- **Output:**  
+  The resulting Lua script (e.g., `cardDescriptionsPentacles.lua`) is written to the `export/` directory. The Lua file is ready to be imported into your Lua-based game project.
 
 ## How to Use
 
-1. Prepare your text file (CSV, TSV, or similar) with the data you want to convert.
-2. Run the appropriate Python script in this folder, specifying your input file.
-3. The script will output a `.lua` file containing the equivalent Lua dictionary/table.
-4. Import this generated file into your Lua project as needed.
+1. Prepare your CSV file (`pentacles_data.csv`) with the required columns listed above.
+2. Run the Python script:
+    ```bash
+    python generate_card_data.py
+    ```
+3. The script will create an `export/` directory (if it doesn't exist) and output `cardDescriptionsPentacles.lua` containing the Lua dictionary/table.
+4. Import or require the generated Lua file in your Lua project as needed.
 
 > **Tip:**  
-> Adjust the script as necessary to match your specific text file formatting and the structure required by your game.
+> You can adjust the input CSV file name and the output path in the script to match your needs. The script is modular, allowing adaptation for other card sets or data formats.
 
 ## Example Use Case
 
-- Quickly convert dialogue, localization, or configuration data from Excel sheets into Lua tables for use in games.
+- Quickly convert card descriptions, keywords, and correspondences from Excel or Sheets into Lua tables for use in games.
 - Use as a template for building your own automation workflows for data integration in Lua projects.
 
 ---
