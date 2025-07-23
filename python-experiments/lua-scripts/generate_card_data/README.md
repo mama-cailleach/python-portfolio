@@ -15,9 +15,10 @@ The main script in this folder, `generate_card_data.py`, demonstrates how to aut
 python-experiments/lua-scripts/generate_card_data/
 ├── README.md
 ├── generate_card_data.py
-├── pentacles_data.csv
+├── textfiles_19_06.xlsx
+├── pentacles_data.csv (...)
 ├── export/
-│   └── cardDescriptionsPentacles.lua
+│   └── cardDescriptionsPentacles.lua (...)
 ```
 
 ## How It Works
