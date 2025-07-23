@@ -5,9 +5,6 @@ See each folder for a README and more details!
 
 ## Contents
 
-- **lua-scripts/**  
-  Helper scripts for converting text/Excel data into Lua tables—great for automating data integration into game projects.
-
 - **krita-scripts/**  
   Python plugins and helpers for automating tasks and effects in Krita, especially for card art and batch image editing.
 
@@ -20,6 +17,8 @@ See each folder for a README and more details!
 - **truco-2000/**  
   CLI truco card game with ASCII art. Only in PTBR for now.
 
+- **wee-tarot-tools/**  
+  Helper scripts for animating tarot card shuffles and converting text/Excel data into Lua tables used on my game Wee Tarot. Great for automating asset and data integration into game projects.
   
 
 ## General Notes
