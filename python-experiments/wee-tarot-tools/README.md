@@ -1,6 +1,7 @@
 # Wee Tarot Tools
 
 This directory contains helper scripts and experimental tools used for **asset generation** and **data automation** for my Playdate game, **Wee Tarot**.
+🗂️[Wee Tarot Repo](https://github.com/mama-cailleach/wee-tarot)
 
 It is a development playground for visual prototyping, spritesheet creation, and automating the conversion of card data into Lua tables, so I can quickly test, tweak, and integrate new tarot deck content and shuffle animations.
 
