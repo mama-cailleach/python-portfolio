@@ -1,3 +1,32 @@
+# truco-2000 (Legacy Version)
+
+> **This directory is no longer actively developed. The project now lives in its own repository: [mama-cailleach/truco-2000](https://github.com/mama-cailleach/truco-2000). Please visit the new repo for the latest updates and ongoing work.**
+
+---
+
+## About This Directory
+
+This folder contains the **legacy code and experiments** from the earliest development stages of the `truco-2000` project. It is preserved here for historical purposes and to showcase the project's evolution.
+
+All new development, bug fixes, and features are now handled in the dedicated repository linked above.
+
+## What is truco-2000?
+
+`truco-2000` is a Python project exploring the digital implementation and simulation of the traditional card game Truco. It began as an experiment in this directory and has since grown into a standalone project.
+
+## Where to Go Next
+
+- For the newest code, documentation, issues, and contributions, visit the main repository:  
+  👉 [https://github.com/mama-cailleach/truco-2000](https://github.com/mama-cailleach/truco-2000)
+
+- This directory will remain as a reference and should not be used as a base for new development.
+
+---
+*Legacy directory – maintained for historical and reference purposes only.*
+
+---
+
+
 # Truco 2000
 
 ## Introduction
